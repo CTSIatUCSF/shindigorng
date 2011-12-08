@@ -225,6 +225,7 @@ public class JsonRpcHandler {
                   .put("links", links)
 
                   // extended meta data
+                  .put("description", prefs.getDescription())
                   .put("directoryTitle", prefs.getDirectoryTitle())
                   .put("thumbnail", prefs.getThumbnail().toString())
                   .put("screenshot", prefs.getScreenshot().toString())

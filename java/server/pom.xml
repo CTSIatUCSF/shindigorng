@@ -94,6 +94,10 @@
       <resource>
         <directory>conf</directory>
       </resource>
+      <resource>
+        <targetPath>templates</targetPath>
+        <directory>${basedir}/../../../babel/engine/src/main/webapp/WEB-INF/templates</directory>
+      </resource>
     </resources>
   </build>
 
@@ -124,6 +128,10 @@
     <dependency>
       <groupId>org.apache.shindig</groupId>
       <artifactId>shindig-extras</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>edu.ucsf.ctsi</groupId>
+      <artifactId>profiles-connector</artifactId>
     </dependency>
 
     <!-- external dependencies -->

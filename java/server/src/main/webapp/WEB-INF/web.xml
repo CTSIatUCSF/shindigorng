@@ -30,10 +30,9 @@
   <context-param>
     <param-name>guice-modules</param-name>
     <param-value>
-      org.apache.shindig.common.PropertiesModule:
       org.apache.shindig.gadgets.DefaultGuiceModule:
       org.apache.shindig.social.core.config.SocialApiGuiceModule:
-      org.apache.shindig.social.sample.SampleModule:
+      edu.ucsf.profiles.shindig.config.ProfilesModule:
       org.apache.shindig.gadgets.oauth.OAuthModule:
       org.apache.shindig.common.cache.ehcache.EhCacheModule:
       org.apache.shindig.sample.shiro.ShiroGuiceModule:
@@ -59,7 +58,7 @@
    <context-param>
   	<param-name>system.properties</param-name>
      <param-value>
-    	shindig.host=localhost
+    	shindig.host=
     	
     	aKey=/shindig/gadgets/proxy?container=default&amp;url=
     	shindig.port=
@@ -217,6 +216,12 @@
       org.apache.shindig.social.sample.oauth.SampleOAuthServlet
     </servlet-class>
   </servlet>
+  
+  <!-- Babel -->
+    <servlet>
+        <servlet-name>babelTranslator</servlet-name>
+        <servlet-class>edu.mit.simile.babel.TranslatorServlet</servlet-class>
+    </servlet>
 
   <servlet-mapping>
     <servlet-name>js</servlet-name>
@@ -276,4 +281,9 @@
     <servlet-name>sampleOAuth</servlet-name>
     <url-pattern>/oauth/*</url-pattern>
   </servlet-mapping>
+
+   <servlet-mapping>
+       <servlet-name>babelTranslator</servlet-name>
+       <url-pattern>/gadgets/translator</url-pattern>
+   </servlet-mapping>
 </web-app>
