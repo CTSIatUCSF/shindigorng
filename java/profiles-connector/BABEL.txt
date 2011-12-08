@@ -1,0 +1,12 @@
+Try this:
+
+http://localhost/shindig/gadgets/translator?reader=rdf-xml&writer=exhibit-json&mimetype=default&url=http://connects.catalyst.harvard.edu/profiles/profile/author/C6F4E065-4423-4FCC-813D-1DB3177FE61C/viewas/rdf&url=http://connects.catalyst.harvard.edu/profiles/profile/person/32213/viewas/rdf
+
+or better yet
+
+http://localhost/shindig/gadgets/translator?reader=rdf-xml&writer=exhibit-jsonp&mimetype=default&url=http://connects.catalyst.harvard.edu/profiles/profile/author/C6F4E065-4423-4FCC-813D-1DB3177FE61C/viewas/rdf&url=http://connects.catalyst.harvard.edu/profiles/profile/person/32213/viewas/rdf&callback=foo
+
+http://localhost/shindig/gadgets/translator?reader=rdf-xml&writer=exhibit-jsonp&mimetype=text/html&url=http://connects.catalyst.harvard.edu/profiles/profile/author/C6F4E065-4423-4FCC-813D-1DB3177FE61C/viewas/rdf&url=http://connects.catalyst.harvard.edu/profiles/profile/person/32213/viewas/rdf&callback=foo
+
+
+look at pubsub for feature
