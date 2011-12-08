@@ -1,6 +1,13 @@
 *~
 *.swp
 
+# By Eric
+.settings
+.svn
+.project
+.classpath
+target
+
 # output of git svn show-ignore below
 # /
 /target
@@ -254,3 +261,7 @@
 /php/create.sql
 /php/drop.sql
 /php/derby.log
+
+
+
+
