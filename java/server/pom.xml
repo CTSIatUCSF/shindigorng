@@ -46,13 +46,6 @@
         <configuration>
           <webResources>
             <resource>
-              <!-- this is relative to the pom.xml directory -->
-              <directory>${basedir}/../../content/</directory>
-              <includes>
-                <include>**/*.*</include>
-              </includes>
-            </resource>
-            <resource>
               <targetPath>META-INF</targetPath>
               <directory>target/maven-shared-archive-resources/META-INF</directory>
               <includes>
@@ -77,13 +70,6 @@
       </plugin>
     </plugins>
     <resources>
-      <resource>
-        <targetPath>containers/default</targetPath>
-        <directory>${basedir}/../../config</directory>
-        <includes>
-          <include>container.js</include>
-        </includes>
-      </resource>
       <resource>
         <targetPath>config</targetPath>
         <directory>${basedir}/../../config</directory>

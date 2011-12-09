@@ -51,8 +51,8 @@ under the License.
     dataStore.removeToken(entry);
   }
   // Gather some data
-  pageContext.setAttribute("appTitle", consumer.getProperty("title") , PageContext.PAGE_SCOPE);
-  pageContext.setAttribute("appDesc", consumer.getProperty("description"), PageContext.PAGE_SCOPE);
+  pageContext.setAttribute("appTitle", consumer.getProperty("title") , pageContext.PAGE_SCOPE);
+  pageContext.setAttribute("appDesc", consumer.getProperty("description"), pageContext.PAGE_SCOPE);
     
   pageContext.setAttribute("appIcon", consumer.getProperty("icon"));
   pageContext.setAttribute("appThumbnail", consumer.getProperty("thumbnail"));
