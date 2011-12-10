@@ -29,7 +29,7 @@
   <artifactId>shindig</artifactId>
   <packaging>pom</packaging>
 
-  <name>Apache Shindig Distribution assembly</name>
+  <name>Apache Shindig-Profiles Distribution assembly</name>
   <description>Assembles the Java/PHP code base into a deployment package.</description>
 
   <scm>
@@ -147,6 +147,11 @@ year=${year}
     <dependency>
       <groupId>org.apache.shindig</groupId>
       <artifactId>shindig-extras</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>edu.ucsf.ctsi</groupId>
+      <artifactId>profiles-connector</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

@@ -25,7 +25,7 @@ babel.translate = function(rdfurl, callback) {
 		    'METHOD' : 'POST'
 		};
 
-    	gadgets.io.makeNonProxiedRequest('translator?' + gadgets.io.encodeValues(data),
+    	gadgets.io.makeNonProxiedRequest('/babel/translator?' + gadgets.io.encodeValues(data),
     		      callback,
     		      makeRequestParams,
     		      'application/javascript'

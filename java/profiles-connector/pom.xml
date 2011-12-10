@@ -58,10 +58,5 @@
     	<type>jar</type>
     	<scope>runtime</scope>
     </dependency>
-    <dependency>
-      <groupId>edu.mit.simile</groupId>
-      <artifactId>babel-engine</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>  
   </dependencies>
 </project>
