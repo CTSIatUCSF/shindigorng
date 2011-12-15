@@ -27,6 +27,16 @@
           <include>**/*</include>
         </includes>
       </resource>
+<!--  Eric Meeks.  It is best to copy this to some external location and then
+	  add the external location to your Tomcat classpath.  That way you can
+	  set sensitive values without having to worry about checking them into 
+	  your source control system
+       <resource>
+        <directory>conf</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource> -->
 	</resources>
   </build>
 

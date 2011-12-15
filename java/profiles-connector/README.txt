@@ -32,7 +32,7 @@ Integrating profiles-shindig into shindig
 	
 	If using IIS to front end Tomcat, make sure that you can handle long URL's!
 
-Install SQLServer JDBC Driver
+Install SQLServer JDBC Driver into you repository if you have not already done so.
 Download jdbc4.jar
 C:\>mvn install:install-file -Dfile=jdbc4.jar -DgroupId=com.microsoft.jdbc -DartifactId=jdbc4 -Dversion=3.0 -Dpackaging=jar
 	

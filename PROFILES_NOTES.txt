@@ -1,0 +1,8 @@
+In order for the maven build to work you will need to install jdbc4-3.0.jar 
+into your maven repository.  Go to \java\profiles-connector\jdbc\ and type the 
+following command:
+
+mvn install:install-file -Dfile=jdbc4-3.0.jar -DgroupId=com.microsoft.jdbc -DartifactId=jdbc4 -Dversion=3.0 -Dpackaging=jar
+
+
+See http://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html for more details
