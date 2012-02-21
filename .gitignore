@@ -8,7 +8,6 @@
 .classpath
 target
 MANIFEST.MF
-.metadata
 
 # output of git svn show-ignore below
 # /
