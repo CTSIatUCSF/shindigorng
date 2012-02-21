@@ -1,69 +1,135 @@
-                          Apache Shindig
+Prerequisites
+	Java 1.6 or higher
+	Git
+	Maven
+	Tomcat 6.x or higher (to run)
+	Eclipse 3.7 or higher (optional for building and debugging)
+	
+Download
+	Create an empty directory and from Git Bash type:
+		>git clone git@github.com:EricMeeks/shindig-profiles.git
 
-  What is it?
-  -----------
+	A shindig-profiles sub-directory will be created with the contents of the code
+	
+Build
+	The project can be built with Maven, but first you need to install jdbc4.jar into your maven repository. 
+	Go to shindig-profiles\java\profiles-connector\jdbc\ and type the following command:
+		>mvn install:install-file -Dfile=jdbc4-3.0.jar -DgroupId=com.microsoft.jdbc -DartifactId=jdbc4 -Dversion=3.0 -Dpackaging=jar
 
-  Shindig is a JavaScript container and implementations of the backend APIs
-  and proxy required for hosting OpenSocial applications.
+	See http://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html for more details
+	
+	Now just go to the top shindig-profiles directory and run maven:
+		>mvn
+		
+	The shindig-profiles\java\server\target\shindig-server-2.0.2.war file will be created.
+	
+Install
+	Create a C:\shindig\conf directory.  
+	Copy the shindig-profiles\java\profiles-connector\conf\profiles.shindig.properties file into the directory and edit as needed 
+	for your environment.  The four values that require editing are: ProfilesEndpoint, dbURL, dbUser, dbPassword.
+	Note that 
 
-  Documentation
-  -------------
+	Put shindig-server-2.0.2.war into your webapps directory under Tomcat and rename to shindig.war
 
-  The most up-to-date documentation can be found at http://shindig.apache.org.
+	Please view the screenshot-apache.JPG file for an example of the following,
+		Add C:\shindig\conf to the BEGINNING of your Java Classpath in Tomcat.
+		Add the following two lines to Java Options for Tomcat 
+			-Dshindig.host=<your profiles host machine>
+			-Dshindig.port=80
+			
+	Create a secure key for Shindig.  
+		The default location for this key is \shindig\openssl\securitytokenkey.txt as set in 
+		shindig-profiles\java\profiles-connector\src\main\resources\profiles-container.js
+		The easiest way to create the key is to find a linux machine and issue the following command:
+			>dd if=/dev/random bs=32 count=1  | openssl base64 > securitytokenkey.txt 
 
-  Read BUILD-JAVA for instructions on how to build and run the Java server.
+		You can then copy this over to your Profiles windows machine, and place it in a \shindig\openssl directory 
+		that you will need to create.
 
-  Read java/README for instructions on how to run a Java gadget server.
+	Start Tomcat.  
+	
+Eclipse
+	Create your eclipse workspace one directory above shindig-profiles
+	Import the projects as maven projects:
+		File->Import...->Maven->Existing Maven Projects
+		Select your workspace directory (the one immediately above shindig-profiles)
+		Accept the default of all pom.xml's being recognized
 
-  Read php/README for instructions on how to run a php gadget server.
+	To build/clean the project:
+		Right click shindig-profiles 
+			Run As->Maven build
+			Run as->Maven clean
 
-  Read javascript/README for instructions for using the Shindig Gadget Container 
-  JavaScript to enable your page to render Gadgets.
+	To run in the Debugger
+		Open the Java EE perspective
+		On Servers tab, right click and add your Tomcat server.
+		Double click on the server to bring up the configuration screen.  
+		Click to the Modules tab (botton of pane), add an external web module and browse to the exploded 
+		shindig-server-2.0.2 WAR (shown below)  
+		Set path to /shindig:
+			Document base: ..\shindig-profiles\java\server\target\shindig-server-2.0.2
+			Path /shindig 
+	
+		Click back to the Overview tab
+		Click the 'Open launch configuration' in the upper left at the bottom of the General Information section.
+		On the (x)= Arguments tab add the Java Options as outlined above:
+			-Dshindig.host=<your profiles host machine>
+			-Dshindig.port=80
+			
+		On the Classpath tab add C:\shindig\conf under User Entries
+			Advanced..->Add External Folder  
+			
+		You can now run and debug shindig-profiles by starting Tomcat from Eclipse 
+			
 
-  Read features/README for instructions on how to use features.
-
-  Licensing
-  ---------
-
-  Please see the file called LICENSE in the java and php directories.
-
-  Shindig URLS
-  ------------
-
-  Home Page:          http://shindig.apache.org/
-  Downloads:          http://shindig.apache.org/download/index.html
-  Mailing Lists:      http://shindig.apache.org/mail-lists.html
-  Source Code:        http://svn.apache.org/repos/asf/shindig
-  Issue Tracking:     https://issues.apache.org/jira/browse/SHINDIG
-  Wiki:               http://cwiki.apache.org/confluence/display/SHINDIG/
+		
 
 
-This distribution includes cryptographic software.  The country in
-which you currently reside may have restrictions on the import,
-possession, use, and/or re-export to another country, of
-encryption software.  BEFORE using any encryption software, please
-check your country's laws, regulations and policies concerning the
-import, possession, or use, and re-export of encryption software, to
-see if this is permitted.  See <http://www.wassenaar.org/> for more
-information.
 
-The U.S. Government Department of Commerce, Bureau of Industry and
-Security (BIS), has classified this software as Export Commodity
-Control Number (ECCN) 5D002.C.1, which includes information security
-software using or performing cryptographic functions with asymmetric
-algorithms.  The form and manner of this Apache Software Foundation
-distribution makes it eligible for export under the License Exception
-ENC Technology Software Unrestricted (TSU) exception (see the BIS
-Export Administration Regulations, Section 740.13) for both object
-code and source code.
 
-The following provides more details on the included cryptographic
-software:
 
-    Apache Shindig PHP interfaces with the mcrypt API
-    <http://mcrypt.sourceforge.net/> to provide encryption
-    of messages using the AES standard.
 
-    Apache Shindig interfaces with the Java JCE APIs to provide
-    encryption of messages using the AES standard.
 
+
+
+
+
+----- STOP--------------
+Setting up in Eclipse/Local Testing
+	Clear out your old repository by deleting C:\Documents and Settings\meekse\.m2\repository or equivalent
+	Follow the instruction in SetupInstrucionsforShindig.pdf.  Use the best branch you can find (currently shindig-project-2.0.0-RC2_
+	Make sure that shindig by itself builds in Eclipse and that you can run it in the debugger on Tomcat.  Test.
+	From eclipse in the workspace you just created for shindig, go to the https://svn.ctsi.ucsf.edu/ctsi/ctsi-profiles-shindig/trunk
+	repository location and check out as a Maven Project
+	Accept defaults.  You should see in the file browser that shindig-profiles has been added as a subfolder in your workspace.
+	Install SQLServer JDBC Driver (see below) if you have not done so before.
+	
+Integrating profiles-shindig into shindig
+	Check pom.xml in shindig-profiles and make sure the parent info is correct.  Be sure to check that version is correct.
+	Add shindig-profiles to the dependencyManagement section of the parent shindig-project/pom.xml.  Make it like the others.
+	In the 'all' profile of shindig-project/pom.xml, add ../shindig-profiles as a module immediately after java/social-api.    
+	Add shindig-profiles as a dependency to shindig-server/pom.xml.  Make it like the others
+	Edit the web.xml.  
+		Remove org.apache.shindig.common.PropertiesModule:
+		Replace org.apache.shindig.social.sample.SampleModule with edu.ucsf.profiles.shindig.config.ProfilesModule
+		Make sure shingid.host and shindig.port are empty, as we need to pass these in via JVM args to Tomcat
+		Optionally remove or comment out the other sample and extras modules
+		
+	In eclipse right click the shindig-profiles project.  Properties->Builders.  Make sure Maven Project Builder is before Validation
+	Look at shindig-social-api and make it like that.
+	
+	Compare profiles.shindig.poperties with conf/shindig.properites in shindig-common
+	Compare profiles-container.js with config/container.js in shindig-project
+	
+	Make sure that profiles.shindig.properties is in the Tomcat class path. 
+	Also add appropriate values for the shindig.port and shindig.host 
+	(ex -Dshindig.port=80 -Dshindig.host=localhost) to the VM Arguments
+	In eclipse do this by editing the launch configuration of Tomcat
+	Outside of eclipse this can be done in the Tomcat monitor
+	
+	If using IIS to front end Tomcat, make sure that you can handle long URL's!
+
+Install SQLServer JDBC Driver into you repository if you have not already done so.
+Download jdbc4.jar
+C:\>mvn install:install-file -Dfile=jdbc4.jar -DgroupId=com.microsoft.jdbc -DartifactId=jdbc4 -Dversion=3.0 -Dpackaging=jar
+	
