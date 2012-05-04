@@ -117,7 +117,7 @@
     </dependency>
     <dependency>
       <groupId>edu.ucsf.ctsi</groupId>
-      <artifactId>profiles-connector</artifactId>
+      <artifactId>shindig-vivo</artifactId>
     </dependency>
 
     <!-- external dependencies -->

@@ -8,10 +8,10 @@
   </parent>
   
   <groupId>edu.ucsf.ctsi</groupId>
-  <artifactId>profiles-connector</artifactId>
+  <artifactId>shindig-vivo</artifactId>
   <packaging>jar</packaging>
-  <name>UCSF Profiles Connector for Shindig</name>
-  <description>Connects Profiles to Shindig</description>
+  <name>UCSF VIVO Connector for Shindig</name>
+  <description>Connects VIVO to Shindig</description>
   
   <scm>
   	<connection>scm:svn:https://svn.ctsi.ucsf.edu/ctsi/trunk</connection>
@@ -61,12 +61,12 @@
     	<type>jar</type>
     	<scope>runtime</scope>
     </dependency>
-    <dependency>
-    	<groupId>com.microsoft.jdbc</groupId>
-    	<artifactId>jdbc4</artifactId>
-    	<version>3.0</version>
+	<dependency>
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<version>5.1.6</version>
     	<type>jar</type>
     	<scope>runtime</scope>
-    </dependency>
+	</dependency>
   </dependencies>
 </project>

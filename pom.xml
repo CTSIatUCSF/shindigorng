@@ -446,7 +446,7 @@
         <module>java/common</module>
         <module>java/gadgets</module>
         <module>java/social-api</module>
-        <module>java/profiles-connector</module>
+        <module>java/vivo-connector</module>
         <module>java/server</module>
         <module>extras</module>
       </modules>
@@ -1432,7 +1432,7 @@
 
       <dependency>
         <groupId>edu.ucsf.ctsi</groupId>
-        <artifactId>profiles-connector</artifactId>
+        <artifactId>shindig-vivo</artifactId>
         <version>${project.version}</version>
       </dependency>
 

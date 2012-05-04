@@ -28,7 +28,7 @@ public class Common {
 
     public Common() throws ClassNotFoundException {
     	//Class.forName("org.apache.derby.jdbc.ClientDriver");
-    	Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+    	Class.forName("com.mysql.jdbc.Driver");
     }
     
     /**
