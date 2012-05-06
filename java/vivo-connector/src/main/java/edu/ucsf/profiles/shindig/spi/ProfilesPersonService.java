@@ -17,17 +17,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.util.ImmediateFuture;
@@ -44,12 +33,11 @@ import org.apache.shindig.social.opensocial.spi.CollectionOptions;
 import org.apache.shindig.social.opensocial.spi.GroupId;
 import org.apache.shindig.social.opensocial.spi.PersonService;
 import org.apache.shindig.social.opensocial.spi.UserId;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -84,13 +72,11 @@ public class ProfilesPersonService implements PersonService {
 		if (userIds.size() == 0) {
 			return ImmediateFuture.newInstance(null);
 		}
-		
+		/**
 		for (UserId id : userIds) {
 			String strId = id.getUserId(token);
 			System.out.println("getting people, id=" + strId);
 
-			DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
 			try {
 				DocumentBuilder builder = factory.newDocumentBuilder();
 				DOMImplementation impl = builder.getDOMImplementation();
@@ -174,12 +160,8 @@ public class ProfilesPersonService implements PersonService {
 				throw new ProtocolException(0, e.getMessage(), e);
 			} catch (SAXException e) {
 				throw new ProtocolException(0, e.getMessage(), e);
-			}/*
-			 * catch (InterruptedException e) { throw new ProtocolException(0,
-			 * e.getMessage(), e); } catch (ExecutionException e) { throw new
-			 * ProtocolException(0, e.getMessage(), e); }
-			 */
-		}
+			}
+		}  */
 		int firstResult = 0;
 		if (options != null) {
 			firstResult = options.getFirst();
@@ -192,93 +174,91 @@ public class ProfilesPersonService implements PersonService {
 			SecurityToken token) throws ProtocolException {
 		String strId = id.getUserId(token);
 		System.out.println("getPerson id=" + strId);
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		
 		try {
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			DOMImplementation impl = builder.getDOMImplementation();
-			Document doc = impl.createDocument(null, null, null);
-			Element root = doc.createElement("Profiles");
-			root.setAttribute("xmlns",
-					"http://connects.profiles.schema/profiles/query");
-			root.setAttribute("Operation", "GetPersonList");
-			root.setAttribute("Version", "2");
-			doc.appendChild(root);
-
-			Element def = doc.createElement("QueryDefinition");
-			root.appendChild(def);
-
-			Element personId = doc.createElement("PersonID");
-			personId.setTextContent(strId);
-			def.appendChild(personId);
-
-			Element options = doc.createElement("OutputOptions");
-			options.setAttribute("SortType", "QueryRelevance");
-			options.setAttribute("StartRecord", "0");
-			//options.setAttribute("MaxRecords", "100");
-			root.appendChild(options);
-
-			Document outDoc = contactEndPoint(builder, doc);
-
-			NodeList outList = outDoc.getElementsByTagName("Person");
 			// There can be only one!
-			Person personObj = parsePerson(outList.item(0));
-			return ImmediateFuture.newInstance(personObj);
-
-		} catch (ParserConfigurationException pce) {
-			throw new ProtocolException(0, pce.getMessage(), pce);
-		} catch (TransformerConfigurationException e) {
-			throw new ProtocolException(0, e.getMessage(), e);
-		} catch (TransformerException e) {
+			if (Integer.parseInt(strId) > 0) {
+				Person personObj = parsePerson(strId, contactEndPoint(strId));				
+				return ImmediateFuture.newInstance(personObj);
+			}
+		} catch (MalformedURLException e) {
 			throw new ProtocolException(0, e.getMessage(), e);
 		} catch (IOException e) {
 			throw new ProtocolException(0, e.getMessage(), e);
-		} catch (SAXException e) {
+		} catch (JSONException e) {
 			throw new ProtocolException(0, e.getMessage(), e);
 		}
+		return ImmediateFuture.newInstance(null);
 	}
 	
-	private Document contactEndPoint(DocumentBuilder builder, Document doc)
-			throws TransformerFactoryConfigurationError,
-			TransformerConfigurationException, TransformerException,
-			MalformedURLException, IOException, SAXException {
+	private JSONObject contactEndPoint(String strId) throws MalformedURLException, 
+	IOException, JSONException {
 		// transform the Document into a String
-		DOMSource domSource = new DOMSource(doc);
-		TransformerFactory tf = TransformerFactory.newInstance();
-		Transformer transformer = tf.newTransformer();
-		transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-		transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-		transformer.setOutputProperty(OutputKeys.ENCODING, "ISO-8859-1");
-		transformer.setOutputProperty(
-				"{http://xml.apache.org/xslt}indent-amount", "4");
-		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-		StringWriter sw = new StringWriter();
-		StreamResult sr = new StreamResult(sw);
-		transformer.transform(domSource, sr);
-		String xml = sw.toString();
-
-		URL u = new URL(endPoint);
+		URL u = new URL("http://localhost:8080/babel/translator?reader=rdf-xml&writer=exhibit-json&mimetype=default");
 		HttpURLConnection uc = (HttpURLConnection) u.openConnection();
 		uc.setDoOutput(true);
 		uc.setDoInput(true);
-		uc.setRequestProperty("Content-type", "text/xml");
+        String boundary = ("" + Math.random()).substring(2);
+		uc.setRequestProperty("Content-type", "multipart/form-data; charset=utf-8; boundary=" + boundary);
 		OutputStream os = uc.getOutputStream();
-		for (int i = 0; i < xml.length(); i++) {
-			os.write(xml.charAt(i));
+		
+        String multipart = "--" + boundary
+                     + "\r\nContent-Disposition: form-data; name=url"
+                     + "\r\nContent-type: application/octet-stream"
+                     + "\r\n\r\n" + "http://localhost:8080/vivo/display/n" + strId + "?format=rdfxml" + "\r\n" 
+                     + "--"+boundary+"--\r\n";
+		
+		
+		for (int i = 0; i < multipart.length(); i++) {
+			os.write(multipart.charAt(i));
 		}
 		os.flush();
 		os.close();
 
-		Document outDoc = builder.parse(uc.getInputStream());
-		return outDoc;
+		// Receive the encoded content.
+		int bytes = 0;
+		String page = "";
+		byte[] bytesReceived = new byte[4096];
+
+		// The following will block until the page is transmitted.
+		while ((bytes = uc.getInputStream().read(bytesReceived)) > 0) {
+			page += new String(bytesReceived, 0, bytes);
+		};
+		
+		return new JSONObject(page);
 	}
 
-	private Person parsePerson(Node curNode) {
+	private Person parsePerson(String strId, JSONObject json) throws JSONException {
 		// TODO there is no check for the visible attribute
 		Person retVal = new ProfilesPerson();
-		if (curNode == null) {
+		retVal.setId(strId);
+		if (json == null) {
 			return retVal;
 		}
-		NodeList list = curNode.getChildNodes();
+		JSONArray items = json.getJSONArray("items");
+		for (int i = 0; i < items.length(); i++) {
+			JSONObject item = items.getJSONObject(i);
+			if (item.getString("uri") != null) {
+				retVal.setProfileUrl(item.getString("uri"));
+			}
+			if (item.getString("mainImage") != null) {
+				retVal.setThumbnailUrl(item.getString("mainImage"));
+			}
+			if (item.getString("label") != null) {
+				retVal.setDisplayName(item.getString("label"));
+			}
+			if (item.getString("primaryEmail") != null) {
+				List<ListField> emails = new ArrayList<ListField>();
+				emails.add( new ListFieldImpl(null, item.getString("primaryEmail")) );
+				retVal.setEmails(emails);
+			}
+			if (item.getString("firstName") != null) {				
+			}
+			if (item.getString("lastName") != null) {				
+			}
+		}
+		
+/**		NodeList list = curNode.getChildNodes();
 		for (int i = 0; i < list.getLength(); i++) {
 			Node tempNode = list.item(i);
 			if (tempNode.getNodeName().equals("PersonID")) {
@@ -314,30 +294,9 @@ public class ProfilesPersonService implements PersonService {
 					orgs.add(parseOrg(inner.item(j)));
 				}
 				retVal.setOrganizations(orgs);
-			} /*
-			 * else { //TODO InternalIDList, BasicStatistics, EmaiImageUrl,
-			 * AwardList, Publications System.out.print(tempNode.getNodeName() +
-			 * " : "); System.out.println(tempNode.getTextContent()); }
-			 */
-		}
+			} 
+		}**/
 		
-		// see if RDF feature is on
-		if (rdf) {
-			try {
-				Connection conn = Common.getConnection();
-				Url url = getRDFUrl(conn, retVal.getId());
-				if (url != null) {
-					List<Url> urls = new ArrayList<Url>();
-					urls.add( url );
-					retVal.setUrls(urls);		
-				}
-				conn.close();
-	        } catch (SQLException je) {
-	            throw new ProtocolException(
-	                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, je
-	                            .getMessage(), je);
-	        }
-		}
 		return retVal;
 	}
 

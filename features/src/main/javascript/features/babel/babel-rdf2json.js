@@ -3,15 +3,23 @@ var babel = babel || {};
 
 babel.translate = function(rdfurl, callback) {
 	
-		var postData = ""; 
+		var urls = [];
 		if (rdfurl instanceof Array) {
-			for (var i = 0; i < rdfurl.length; i++) {
-				postData += "url=" + rdfurl[i] + ( i < rdfurl.length - 1 ? "&" : "");
-			}
+			urls.concat(rdfurl);
 		}
 		else {
-			postData = "url=" + rdfurl;
+			urls[0] = rdfurl;
 		}
+		
+		var multipart = ""; 
+        var boundary = Math.random().toString().substr(2);
+        for (var i = 0; i < urls.length; i++) {
+        	multipart += "--" + boundary
+                     + "\r\nContent-Disposition: form-data; name=url"
+                     + "\r\nContent-type: application/octet-stream"
+                     + "\r\n\r\n" + urls[i] + "?format=rdfxml" + "\r\n";
+        }
+        multipart += "--"+boundary+"--\r\n";
 		
     	var data = {
     		reader : 'rdf-xml',
@@ -20,7 +28,7 @@ babel.translate = function(rdfurl, callback) {
     	};
     	
     	var makeRequestParams = {
-    		'POST_DATA' : postData,    			
+    		'POST_DATA' : multipart,    			
 		    'CONTENT_TYPE' : 'JSON',
 		    'METHOD' : 'POST'
 		};
@@ -28,19 +36,15 @@ babel.translate = function(rdfurl, callback) {
     	gadgets.io.makeNonProxiedRequest('/babel/translator?' + gadgets.io.encodeValues(data),
     		      callback,
     		      makeRequestParams,
-    		      'application/javascript'
+    		      'multipart/form-data; charset=utf-8; boundary=' + boundary
     	);    	
 };
 
 babel.people = babel.people || {};
 
 babel.people.get = function(person, callback) {
-	if (person.urls) {
-		  for (var i = 0; i < person.urls.length; i++) {
-			if (person.urls[i].type == "RDF") {
-				babel.translate(person.urls[i].value, callback)
-			}
-		  }
+	if (person.profileUrl) {
+		babel.translate(person.profileUrl, callback)
      }
 };	
 

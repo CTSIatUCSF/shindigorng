@@ -21,6 +21,6 @@ specific language governing permissions and limitations under the License.
   <dependency>core.io</dependency>
   <dependency>osapi</dependency>
   <gadget>
-    <script src="babel.js"/>
+    <script src="babel-rdf2json.js"/>
   </gadget>
 </feature>
