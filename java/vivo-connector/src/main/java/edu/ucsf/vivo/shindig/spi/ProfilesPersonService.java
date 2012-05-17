@@ -1,4 +1,4 @@
-package edu.ucsf.profiles.shindig.spi;
+package edu.ucsf.vivo.shindig.spi;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,22 +44,20 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import edu.ucsf.profiles.shindig.model.ProfilesName;
-import edu.ucsf.profiles.shindig.model.ProfilesOrganization;
-import edu.ucsf.profiles.shindig.model.ProfilesPerson;
+import edu.ucsf.vivo.shindig.model.ProfilesName;
+import edu.ucsf.vivo.shindig.model.ProfilesOrganization;
+import edu.ucsf.vivo.shindig.model.ProfilesPerson;
 
 /**
  * Implementation of supported services backed by a JSON DB.
  */
 public class ProfilesPersonService implements PersonService {
-	private String endPoint;
-	private boolean rdf;
+	private String vivoURL;
 
 	@Inject
-	public ProfilesPersonService(@Named("ProfilesEndpoint") String endpoint, @Named("profiles.RDF")String rdf)
+	public ProfilesPersonService(@Named("vivo.url") String vivoURL)
 			throws Exception {
-		this.endPoint = endpoint;
-		this.rdf = "TRUE".equalsIgnoreCase(rdf);
+		this.vivoURL = vivoURL;
 	}
 
 	public Future<RestfulCollection<Person>> getPeople(Set<UserId> userIds,
@@ -205,7 +203,7 @@ public class ProfilesPersonService implements PersonService {
         String multipart = "--" + boundary
                      + "\r\nContent-Disposition: form-data; name=url"
                      + "\r\nContent-type: application/octet-stream"
-                     + "\r\n\r\n" + "http://localhost:8080/vivo/display/n" + strId + "?format=rdfxml" + "\r\n" 
+                     + "\r\n\r\n" + vivoURL + "/display/n" + strId + "?format=rdfxml" + "\r\n" 
                      + "--"+boundary+"--\r\n";
 		
 		
@@ -252,10 +250,14 @@ public class ProfilesPersonService implements PersonService {
 				emails.add( new ListFieldImpl(null, item.getString("primaryEmail")) );
 				retVal.setEmails(emails);
 			}
+			Name name = new ProfilesName();
 			if (item.getString("firstName") != null) {				
+				name.setGivenName(item.getString("firstName"));
 			}
 			if (item.getString("lastName") != null) {				
+				name.setFamilyName(item.getString("lastName"));
 			}
+			retVal.setName(name);
 		}
 		
 /**		NodeList list = curNode.getChildNodes();
@@ -300,19 +302,6 @@ public class ProfilesPersonService implements PersonService {
 		return retVal;
 	}
 
-	private Url getRDFUrl(Connection conn, String id)
-			throws SQLException {
-		PreparedStatement ps = conn
-				.prepareStatement("select url from RDF where personId=?");
-		ps.setString(1, id);
-		ResultSet rs = ps.executeQuery();
-		if (rs.next()) {
-			return new UrlImpl(rs.getString("url"), "RDF", "RDF");
-		}
-		return null;
-	}
-
-	
 	private Organization parseOrg(Node curNode) {
 		Organization retVal = new ProfilesOrganization();
 		NodeList list = curNode.getChildNodes();
@@ -338,7 +327,7 @@ public class ProfilesPersonService implements PersonService {
 	public static void main(String args[]) {
 		try {
 			ProfilesPersonService test = new ProfilesPersonService(
-					"http://connects.catalyst.harvard.edu/ProfilesAPI/ProfileService.svc/ProfileSearch", "true");
+					"http://connects.catalyst.harvard.edu/ProfilesAPI/ProfileService.svc/ProfileSearch");
 			UserId user = new UserId(UserId.Type.userId, "ISK1");
 			// test.getPerson(user, null, null);
 			Set<UserId> users = new HashSet<UserId>();

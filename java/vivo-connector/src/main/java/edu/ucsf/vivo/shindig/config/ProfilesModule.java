@@ -1,4 +1,4 @@
-package edu.ucsf.profiles.shindig.config;
+package edu.ucsf.vivo.shindig.config;
 
 import org.apache.shindig.common.PropertiesModule;
 import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
@@ -12,16 +12,16 @@ import org.apache.shindig.social.sample.spi.JsonDbOpensocialService;
 
 import com.google.inject.name.Names;
 
-import edu.ucsf.profiles.shindig.service.SecureTokenGeneratorService;
-import edu.ucsf.profiles.shindig.spi.Common;
-import edu.ucsf.profiles.shindig.spi.ProfilesActivityService;
-import edu.ucsf.profiles.shindig.spi.ProfilesAppDataService;
-import edu.ucsf.profiles.shindig.spi.ProfilesMessageService;
-import edu.ucsf.profiles.shindig.spi.ProfilesPersonService;
+import edu.ucsf.vivo.shindig.service.SecureTokenGeneratorService;
+import edu.ucsf.vivo.shindig.spi.Common;
+import edu.ucsf.vivo.shindig.spi.ProfilesActivityService;
+import edu.ucsf.vivo.shindig.spi.ProfilesAppDataService;
+import edu.ucsf.vivo.shindig.spi.ProfilesMessageService;
+import edu.ucsf.vivo.shindig.spi.ProfilesPersonService;
 
 public class ProfilesModule extends PropertiesModule {//SocialApiGuiceModule {
 	
-	private final static String DEFAULT_PROPERTIES = "profiles.shindig.properties";
+	private final static String DEFAULT_PROPERTIES = "vivo.shindig.properties";
 	
 	SecureTokenGeneratorService service = null;
 	
@@ -52,7 +52,7 @@ public class ProfilesModule extends PropertiesModule {//SocialApiGuiceModule {
         
         // start token service thread
         // pass in port now because waiting for injection would be too late
-		service = new SecureTokenGeneratorService(Integer.parseInt(getProperties().getProperty("profiles.tokenservice.port")));
+		service = new SecureTokenGeneratorService(Integer.parseInt(getProperties().getProperty("rnt.tokenservice.port")));
 		Thread thread = new Thread(service);
 		thread.setDaemon(true);
 		thread.start();

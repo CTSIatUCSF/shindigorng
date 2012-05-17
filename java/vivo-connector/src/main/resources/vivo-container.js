@@ -69,16 +69,16 @@
 // iframeBaseUri will automatically have the host inserted
 // if locked domain is enabled and the implementation supports it.
 // query parameters will be added.
-"gadgets.iframeBaseUri" : "/shindig/gadgets/ifr",
-"gadgets.uri.iframe.basePath" : "/shindig/gadgets/ifr",
+"gadgets.iframeBaseUri" : "/vivoshindig/gadgets/ifr",
+"gadgets.uri.iframe.basePath" : "/vivoshindig/gadgets/ifr",
 
 // jsUriTemplate will have %host% and %js% substituted.
 // No locked domain special cases, but jsUriTemplate must
 // never conflict with a lockedDomainSuffix.
-"gadgets.jsUriTemplate" : "http://%host%/shindig/gadgets/js/%js%",
+"gadgets.jsUriTemplate" : "http://%host%/vivoshindig/gadgets/js/%js%",
 	
 // Callback URL.  Scheme relative URL for easy switch between https/http.
-"gadgets.uri.oauth.callbackTemplate" : "//%host%/shindig/gadgets/oauthcallback",
+"gadgets.uri.oauth.callbackTemplate" : "//%host%/vivoshindig/gadgets/oauthcallback",
 
 // Use an insecure security token by default
 //"gadgets.securityTokenType" : "insecure",
@@ -86,7 +86,7 @@
 // Config param to load Opensocial data for social
 // preloads in data pipelining.  %host% will be
 // substituted with the current host.
-"gadgets.osDataUri" : "http://%host%/shindig/rpc",
+"gadgets.osDataUri" : "http://%host%/vivoshindig/rpc",
 
 // Uncomment these to switch to a secure version
 //
@@ -105,16 +105,16 @@
 
 // Default Js Uri config: also must be overridden.
 "gadgets.uri.js.host": "${Cur['defaultShindigTestHost']}",
-"gadgets.uri.js.path": "/shindig/gadgets/js",
+"gadgets.uri.js.path": "/vivoshindig/gadgets/js",
 
 // Default concat Uri config; used for testing.
 "gadgets.uri.concat.host" : "${Cur['defaultShindigProxyConcatAuthority']}",
-"gadgets.uri.concat.path" : "/shindig/gadgets/concat",
+"gadgets.uri.concat.path" : "/vivoshindig/gadgets/concat",
 "gadgets.uri.concat.js.splitToken" : "false",
 
 // Default proxy Uri config; used for testing.
 "gadgets.uri.proxy.host" : "${Cur['defaultShindigProxyConcatAuthority']}",
-"gadgets.uri.proxy.path" : "/shindig/gadgets/proxy",
+"gadgets.uri.proxy.path" : "/vivoshindig/gadgets/proxy",
 
 // This config data will be passed down to javascript. Please
 // configure your object using the feature name rather than
@@ -126,22 +126,22 @@
   "core.io" : {
     // Note: /proxy is an open proxy. Be careful how you expose this!
     // Note: Here // is replaced with the current protocol http/https
-    "proxyUrl" : "//%host%/shindig/gadgets/proxy?container=default&refresh=%refresh%&url=%url%%rewriteMime%",
-    "jsonProxyUrl" : "//%host%/shindig/gadgets/makeRequest"
+    "proxyUrl" : "//%host%/vivoshindig/gadgets/proxy?container=default&refresh=%refresh%&url=%url%%rewriteMime%",
+    "jsonProxyUrl" : "//%host%/vivoshindig/gadgets/makeRequest"
   },
   "views" : {
 	    "home" : {
 	        "isOnlyVisible" : false,
-	        "urlTemplate" : "ProfileEdit.aspx?",
+	        "urlTemplate" : "individual?",
 	    },
 	    "profile" : {
 	      "isOnlyVisible" : false,
-	      "urlTemplate" : "ProfileDetails.aspx?",
+	      "urlTemplate" : "individual?",
 	      "aliases": ["DASHBOARD", "default"]
 	    },
 	    "canvas" : {
 	      "isOnlyVisible" : true,
-	      "urlTemplate" : "GadgetDetails.aspx?",
+	      "urlTemplate" : "gadget?",
 	      "aliases" : ["FULL_PAGE"]
 	    }
 	  },
@@ -218,7 +218,7 @@
     // parameter if it passes input validation and is not null.
     // This should never be on the same host in a production environment!
     // Only use this for TESTING!
-    "parentRelayUrl" : "/shindig/container/rpc_relay.html",
+    "parentRelayUrl" : "/vivoshindig/container/rpc_relay.html",
 
     // If true, this will use the legacy ifpc wire format when making rpc
     // requests.
@@ -238,9 +238,9 @@
   "opensocial" : {
     // Path to fetch opensocial data from
     // Must be on the same domain as the gadget rendering server
-    "path" : "http://%host%/shindig/rpc",
+    "path" : "http://%host%/vivoshindig/rpc",
     // Path to issue invalidate calls
-    "invalidatePath" : "http://%host%/shindig/rpc",
+    "invalidatePath" : "http://%host%/vivoshindig/rpc",
     "domain" : "shindig",
     "enableCaja" : false,
     "supportedFields" : {
@@ -266,7 +266,7 @@
   },
   "osapi" : {
     // The endpoints to query for available JSONRPC/REST services
-    "endPoints" : [ "http://%host%/shindig/rpc" ]
+    "endPoints" : [ "http://%host%/vivoshindig/rpc" ]
   },
   "osml": {
     // OSML library resource.  Can be set to null or the empty string to disable OSML

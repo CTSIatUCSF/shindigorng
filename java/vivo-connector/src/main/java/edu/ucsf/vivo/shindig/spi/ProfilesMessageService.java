@@ -1,4 +1,4 @@
-package edu.ucsf.profiles.shindig.spi;
+package edu.ucsf.vivo.shindig.spi;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,8 +23,8 @@ import org.apache.shindig.social.opensocial.spi.UserId;
 
 import com.google.common.collect.Lists;
 
-import edu.ucsf.profiles.shindig.model.ProfilesMessage;
-import edu.ucsf.profiles.shindig.model.ProfilesMessageCollection;
+import edu.ucsf.vivo.shindig.model.ProfilesMessage;
+import edu.ucsf.vivo.shindig.model.ProfilesMessageCollection;
 
 /*
  * TODO multi-recipient messages, multi collection messages, delete, groups

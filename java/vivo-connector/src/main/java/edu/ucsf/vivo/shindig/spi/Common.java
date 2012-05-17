@@ -1,4 +1,4 @@
-package edu.ucsf.profiles.shindig.spi;
+package edu.ucsf.vivo.shindig.spi;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,13 +18,13 @@ import com.google.inject.name.Named;
 public class Common {
 
 	@Inject
-	@Named("dbURL") private static String dbUrl;
+	@Named("rnt.dbURL") private static String dbUrl;
 
 	@Inject
-	@Named("dbUser") private static String dbUser;
+	@Named("rnt.dbUser") private static String dbUser;
 
 	@Inject
-	@Named("dbPassword") private static String dbPassword;
+	@Named("rnt.dbPassword") private static String dbPassword;
 
     public Common() throws ClassNotFoundException {
     	//Class.forName("org.apache.derby.jdbc.ClientDriver");

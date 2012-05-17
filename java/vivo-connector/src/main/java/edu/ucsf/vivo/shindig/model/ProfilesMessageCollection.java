@@ -1,4 +1,4 @@
-package edu.ucsf.profiles.shindig.model;
+package edu.ucsf.vivo.shindig.model;
 
 import java.util.Date;
 import java.util.List;

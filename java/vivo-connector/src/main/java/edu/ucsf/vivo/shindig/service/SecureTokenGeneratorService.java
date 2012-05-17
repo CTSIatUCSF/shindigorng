@@ -1,4 +1,4 @@
-package edu.ucsf.profiles.shindig.service;
+package edu.ucsf.vivo.shindig.service;
 
 import java.io.BufferedReader;
 import java.io.File;

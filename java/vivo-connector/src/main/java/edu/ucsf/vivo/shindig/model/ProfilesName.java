@@ -1,4 +1,4 @@
-package edu.ucsf.profiles.shindig.model;
+package edu.ucsf.vivo.shindig.model;
 
 import org.apache.shindig.social.opensocial.model.Name;
 

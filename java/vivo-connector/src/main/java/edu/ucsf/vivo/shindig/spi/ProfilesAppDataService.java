@@ -1,4 +1,4 @@
-package edu.ucsf.profiles.shindig.spi;
+package edu.ucsf.vivo.shindig.spi;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
