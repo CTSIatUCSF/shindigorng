@@ -32,7 +32,7 @@
     <param-value>
       org.apache.shindig.gadgets.DefaultGuiceModule:
       org.apache.shindig.social.core.config.SocialApiGuiceModule:
-      edu.ucsf.vivo.shindig.config.ProfilesModule:
+      edu.ucsf.orng.shindig.config.OrngModule:
       org.apache.shindig.gadgets.oauth.OAuthModule:
       org.apache.shindig.common.cache.ehcache.EhCacheModule:
       org.apache.shindig.sample.shiro.ShiroGuiceModule:
@@ -60,7 +60,7 @@
      <param-value>
     	shindig.host=
     	
-    	aKey=/vivoshindig/gadgets/proxy?container=default&amp;url=
+    	aKey=/shindigorng/gadgets/proxy?container=default&amp;url=
     	shindig.port=
     	
      </param-value>

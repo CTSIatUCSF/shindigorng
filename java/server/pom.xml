@@ -117,7 +117,7 @@
     </dependency>
     <dependency>
       <groupId>edu.ucsf.ctsi</groupId>
-      <artifactId>shindig-vivo</artifactId>
+      <artifactId>shindig-orng-connector</artifactId>
     </dependency>
 
     <!-- external dependencies -->
