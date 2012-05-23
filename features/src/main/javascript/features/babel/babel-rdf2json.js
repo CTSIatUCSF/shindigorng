@@ -33,7 +33,7 @@ babel.translate = function(rdfurl, callback) {
 		    'METHOD' : 'POST'
 		};
 
-    	gadgets.io.makeNonProxiedRequest('/babel/translator?' + gadgets.io.encodeValues(data),
+    	gadgets.io.makeNonProxiedRequest('/shindigorng/babel?' + gadgets.io.encodeValues(data),
     		      callback,
     		      makeRequestParams,
     		      'multipart/form-data; charset=utf-8; boundary=' + boundary

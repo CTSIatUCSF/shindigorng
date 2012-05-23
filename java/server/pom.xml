@@ -80,10 +80,6 @@
       <resource>
         <directory>conf</directory>
       </resource>
-      <resource>
-        <targetPath>templates</targetPath>
-        <directory>${basedir}/../../../babel/engine/src/main/webapp/WEB-INF/templates</directory>
-      </resource>
     </resources>
   </build>
 
@@ -157,7 +153,7 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
     </dependency>
-
+    
     <!-- test -->
     <dependency>
       <groupId>org.mortbay.jetty</groupId>

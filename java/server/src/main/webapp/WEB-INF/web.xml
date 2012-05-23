@@ -217,6 +217,11 @@
     </servlet-class>
   </servlet>
   
+    <servlet>
+        <servlet-name>BabelTranslator</servlet-name>
+        <servlet-class>edu.mit.simile.babel.TranslatorServlet</servlet-class>
+    </servlet> 
+  
   <servlet-mapping>
     <servlet-name>js</servlet-name>
     <url-pattern>/gadgets/js/*</url-pattern>
@@ -275,4 +280,10 @@
     <servlet-name>sampleOAuth</servlet-name>
     <url-pattern>/oauth/*</url-pattern>
   </servlet-mapping>
+  
+   <servlet-mapping>
+       <servlet-name>BabelTranslator</servlet-name>
+       <url-pattern>/babel</url-pattern>
+   </servlet-mapping>
+  
 </web-app>
