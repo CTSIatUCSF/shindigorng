@@ -31,8 +31,8 @@
     <param-name>guice-modules</param-name>
     <param-value>
       org.apache.shindig.gadgets.DefaultGuiceModule:
-      org.apache.shindig.social.core.config.SocialApiGuiceModule:
-      edu.ucsf.orng.shindig.config.OrngModule:
+      edu.ucsf.orng.shindig.config.OrngSocialApiGuiceModule:
+      edu.ucsf.orng.shindig.config.OrngPropertiesModule:
       org.apache.shindig.gadgets.oauth.OAuthModule:
       org.apache.shindig.common.cache.ehcache.EhCacheModule:
       org.apache.shindig.sample.shiro.ShiroGuiceModule:
@@ -217,11 +217,6 @@
     </servlet-class>
   </servlet>
   
-    <servlet>
-        <servlet-name>BabelTranslator</servlet-name>
-        <servlet-class>edu.mit.simile.babel.TranslatorServlet</servlet-class>
-    </servlet> 
-  
   <servlet-mapping>
     <servlet-name>js</servlet-name>
     <url-pattern>/gadgets/js/*</url-pattern>
@@ -280,10 +275,5 @@
     <servlet-name>sampleOAuth</servlet-name>
     <url-pattern>/oauth/*</url-pattern>
   </servlet-mapping>
-  
-   <servlet-mapping>
-       <servlet-name>BabelTranslator</servlet-name>
-       <url-pattern>/babel</url-pattern>
-   </servlet-mapping>
   
 </web-app>

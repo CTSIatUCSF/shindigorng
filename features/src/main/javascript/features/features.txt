@@ -75,4 +75,4 @@ features/views/feature.xml
 features/xhrwrapper/feature.xml
 features/xmlutil/feature.xml
 features/com.google.gadgets.analytics/feature.xml
-features/babel/feature.xml
+features/rdf/feature.xml

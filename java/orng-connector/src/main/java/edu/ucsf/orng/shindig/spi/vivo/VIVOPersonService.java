@@ -1,20 +1,9 @@
 package edu.ucsf.orng.shindig.spi.vivo;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -36,22 +25,17 @@ import org.apache.shindig.social.opensocial.spi.UserId;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.openrdf.sail.memory.MemoryStore;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
-import edu.mit.simile.babel.Babel;
-import edu.mit.simile.babel.BabelException;
-import edu.mit.simile.babel.BabelReader;
-import edu.mit.simile.babel.BabelWriter;
-import edu.mit.simile.babel.TranslatorServlet;
 import edu.ucsf.orng.shindig.model.OrngName;
 import edu.ucsf.orng.shindig.model.OrngOrganization;
 import edu.ucsf.orng.shindig.model.OrngPerson;
+import edu.ucsf.orng.shindig.service.RdfHandler;
+import edu.ucsf.orng.shindig.spi.RdfService;
 
 /**
  * Implementation of supported services backed by a JSON DB.
@@ -60,12 +44,14 @@ public class VIVOPersonService implements PersonService {
 
 	private static final Logger LOG = Logger.getLogger(VIVOPersonService.class.getName());	
 	
-	private String orngURL;
+	private final RdfHandler rdfHandler;
+	private final RdfService rdfService;
 
 	@Inject
-	public VIVOPersonService(@Named("orng.url") String orngURL)
+	public VIVOPersonService(RdfHandler rdfHandler, RdfService rdfService)
 			throws Exception {
-		this.orngURL = orngURL;
+		this.rdfHandler = rdfHandler;
+		this.rdfService = rdfService;
 	}
 
 	public Future<RestfulCollection<Person>> getPeople(Set<UserId> userIds,
@@ -184,7 +170,7 @@ public class VIVOPersonService implements PersonService {
 		try {
 			// There can be only one!
 			if (Integer.parseInt(strId) > 0) {
-				Person personObj = parsePerson(strId, internalConvert(strId));				
+				Person personObj = parsePerson(strId, rdfService.getRDF(rdfHandler.makeIdIntoURL(strId)));				
 				return ImmediateFuture.newInstance(personObj);
 			}
 		} catch (MalformedURLException e) {
@@ -199,6 +185,7 @@ public class VIVOPersonService implements PersonService {
 		return ImmediateFuture.newInstance(null);
 	}
 	
+	/*
 	private JSONObject contactEndPoint(String strId) throws MalformedURLException, 
 	IOException, JSONException {
 		// transform the Document into a String
@@ -234,52 +221,7 @@ public class VIVOPersonService implements PersonService {
 		};
 		
 		return new JSONObject(page);
-	}
-
-	private JSONObject internalConvert(String strId) throws Exception  {
-		String url = orngURL + "/display/n" + strId + "?format=rdfxml";
-		BabelReader babelReader = Babel.getReader("rdf-xml"); 
-		BabelWriter babelWriter = Babel.getWriter("exhibit-json"); 
-		Locale locale = Locale.getDefault();
-		Properties readerProperties = new Properties();
-		Properties writerProperties = new Properties();
-
-        readerProperties.setProperty("namespace", TranslatorServlet.makeIntoNamespace(url));
-        readerProperties.setProperty("url", url);
-        
-		URLConnection connection = new URL(url).openConnection();
-		connection.setConnectTimeout(5000);
-		connection.connect();
-
-        InputStream inputStream = connection.getInputStream();
-        StringWriter writer = new StringWriter();
-        
-		MemoryStore store = new MemoryStore();
-        try {
-        	store.initialize();
-            try {
-    			if (babelReader.takesReader()) {
-    				String encoding = connection.getContentEncoding();
-    				
-    				Reader reader = new InputStreamReader(
-    					inputStream, (encoding == null) ? "ISO-8859-1" : encoding);
-    							
-    				babelReader.read(reader, store, readerProperties, locale);
-    			} else {
-    				babelReader.read(inputStream, store, readerProperties, locale);
-    			}
-            } finally {
-    			inputStream.close();
-            }
-            
-    		babelWriter.write(writer, store, writerProperties, locale);
-        }
-        finally {
-        	store.shutDown();
-        }
-        
-		return new JSONObject(writer.toString());
-	}
+	}*/
 
 	private Person parsePerson(String strId, JSONObject json) throws JSONException {
 		// TODO there is no check for the visible attribute

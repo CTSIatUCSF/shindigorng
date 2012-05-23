@@ -17,16 +17,18 @@ import edu.ucsf.orng.shindig.spi.OrngUtil;
 import edu.ucsf.orng.shindig.spi.OrngActivityService;
 import edu.ucsf.orng.shindig.spi.OrngMessageService;
 import edu.ucsf.orng.shindig.spi.OrngAppDataService;
+import edu.ucsf.orng.shindig.spi.RdfBabelService;
+import edu.ucsf.orng.shindig.spi.RdfService;
 import edu.ucsf.orng.shindig.spi.vivo.VIVOPersonService;
 import edu.ucsf.orng.shindig.spi.profiles.ProfilesPersonService;
 
-public class OrngModule extends PropertiesModule {//SocialApiGuiceModule {
+public class OrngPropertiesModule extends PropertiesModule {//SocialApiGuiceModule {
 	
 	private final static String DEFAULT_PROPERTIES = "shindig.orng.properties";
 	
 	SecureTokenGeneratorService service = null;
 	
-	public OrngModule() {
+	public OrngPropertiesModule() {
 		super(DEFAULT_PROPERTIES);
 	}
 
@@ -46,6 +48,7 @@ public class OrngModule extends PropertiesModule {//SocialApiGuiceModule {
 	    bind(ActivityService.class).to(OrngActivityService.class);
         bind(MessageService.class).to(OrngMessageService.class);
 	    bind(AppDataService.class).to(OrngAppDataService.class);
+	    bind(RdfService.class).to(RdfBabelService.class);
 
 		String orngSystem = getProperties().getProperty("orng.system");		
 		if ("Profiles".equalsIgnoreCase(orngSystem)) {

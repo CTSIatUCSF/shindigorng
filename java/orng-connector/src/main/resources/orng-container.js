@@ -243,6 +243,7 @@
     "invalidatePath" : "http://%host%/shindigorng/rpc",
     "domain" : "shindig",
     "enableCaja" : false,
+    "supportedOntologies" : ["vivo-core-public-1.4"],
     "supportedFields" : {
        "person" : ["id", {"name" : ["familyName", "givenName", "unstructured"]}, "thumbnailUrl", "profileUrl"],
        "activity" : ["appId", "body", "bodyId", "externalId", "id", "mediaItems", "postedTime", "priority", 

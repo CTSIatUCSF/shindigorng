@@ -17,10 +17,13 @@ KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 -->
 <feature>
-  <name>babel</name>
+  <name>rdf</name>
   <dependency>core.io</dependency>
   <dependency>osapi</dependency>
   <gadget>
-    <script src="babel-rdf2json.js"/>
+    <script src="rdfhelpers.js"></script>
   </gadget>
+  <container>
+    <script src="rdfhelpers.js"></script>
+  </container>
 </feature>
