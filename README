@@ -14,7 +14,7 @@ Download
 	
 Build
 	The project can be built with Maven, but first you need to install jdbc4.jar into your maven repository. 
-	Go to shindig-profiles\java\profiles-connector\jdbc\ and type the following command:
+	Go to ..\shindig-orng-connector\jdbc\ and type the following command:
 		>mvn install:install-file -Dfile=jdbc4-3.0.jar -DgroupId=com.microsoft.jdbc -DartifactId=jdbc4 -Dversion=3.0 -Dpackaging=jar
 
 	See http://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html for more details
