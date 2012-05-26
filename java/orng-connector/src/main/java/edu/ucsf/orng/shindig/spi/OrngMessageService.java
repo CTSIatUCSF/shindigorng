@@ -185,13 +185,4 @@ public class OrngMessageService implements MessageService {
         return retVal;
     }
 
-    public static void init() {
-        try {
-            Connection conn = OrngUtil.getConnection(true);
-            Statement statement = conn.createStatement();
-            statement.execute("CREATE TABLE shindig_messages(msgId varchar(255),senderId varchar(255),recipientId varchar(255),coll varchar(255),title varchar(4095),body varchar(4095))");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 }

@@ -36,6 +36,9 @@ public class OrngAppDataService implements AppDataService {
             Map<String, Map<String, String>> idToData = Maps.newHashMap();
             Set<String> idSet = OrngUtil.getIdSet(userIds, groupId, token);
             for (String id : idSet) {
+            	if (id == null || id.isEmpty()) {
+            		break;
+            	}
             	LOG.log(Level.INFO, "getPersonData " +id + " "
                          + groupId.getType() + " " + appId);
                 Map<String, String> data = Maps.newHashMap();
@@ -112,7 +115,7 @@ public class OrngAppDataService implements AppDataService {
             throws SQLException {
         CallableStatement cs = conn
 		        .prepareCall("{ call shindig_deleteAppData(?, ?, ?)}");
-		cs.setInt(1, Integer.parseInt(id));
+		cs.setString(1, id);
 		cs.setInt(2, Integer.parseInt(appId));
 		cs.setString(3, key);
         cs.execute();
@@ -122,20 +125,11 @@ public class OrngAppDataService implements AppDataService {
             String key, String value) throws SQLException {
         CallableStatement cs = conn
                 .prepareCall("{ call shindig_upsertAppData(?, ?, ?, ?)}");
-        cs.setInt(1, Integer.parseInt(id));
+        cs.setString(1,id);
         cs.setInt(2, Integer.parseInt(appId));
         cs.setString(3, key);
         cs.setString(4, value);
         cs.execute();
     }
 
-    public static void init() {
-        try {
-            Connection conn = OrngUtil.getConnection(true);
-            Statement statement = conn.createStatement();
-            statement.execute("CREATE TABLE shindig_appdata(userId varchar(255),appId varchar(255),keyname varchar(255),value varchar(4095))");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 }

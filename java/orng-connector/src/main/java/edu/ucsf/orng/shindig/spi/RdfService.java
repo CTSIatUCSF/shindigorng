@@ -20,10 +20,8 @@ package edu.ucsf.orng.shindig.spi;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RestfulCollection;
-import org.apache.shindig.social.opensocial.model.Person;
 import org.apache.shindig.social.opensocial.spi.CollectionOptions;
 import org.apache.shindig.social.opensocial.spi.GroupId;
-import org.apache.shindig.social.opensocial.spi.UserId;
 import org.json.JSONObject;
 
 import java.util.Set;
@@ -34,6 +32,8 @@ import java.util.concurrent.Future;
  */
 public interface RdfService {
 
+	public static final String FULL = "full";
+	public static final String MINIMAL = "minimal";
 	  /**
 	   * Returns a list of people that correspond to the passed in person ids.
 	   *
@@ -44,7 +44,7 @@ public interface RdfService {
 	   * @param token The gadget token @return a list of people.
 	   * @return Future that returns a RestfulCollection of Person
 	   */
-	  Future<RestfulCollection<JSONObject>> getItems(Set<String> urls, GroupId groupId,
+	  Future<RestfulCollection<JSONObject>> getItems(Set<String> uris, String output, GroupId groupId,
 	      CollectionOptions collectionOptions, SecurityToken token)
 	      throws ProtocolException;
 
@@ -57,8 +57,8 @@ public interface RdfService {
    * @param token The gadget token
    * @return a list of people.
    */
-  Future<JSONObject> getItem(String url)
+  Future<JSONObject> getItem(String uri, String output)
       throws ProtocolException;
   
-  JSONObject getRDF(String url) throws Exception;
+  JSONObject getRDF(String uri, String output) throws Exception;
 }

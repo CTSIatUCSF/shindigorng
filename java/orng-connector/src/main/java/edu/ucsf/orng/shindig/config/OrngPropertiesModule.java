@@ -18,6 +18,7 @@ import edu.ucsf.orng.shindig.spi.OrngActivityService;
 import edu.ucsf.orng.shindig.spi.OrngMessageService;
 import edu.ucsf.orng.shindig.spi.OrngAppDataService;
 import edu.ucsf.orng.shindig.spi.RdfBabelService;
+import edu.ucsf.orng.shindig.spi.RdfEldaService;
 import edu.ucsf.orng.shindig.spi.RdfService;
 import edu.ucsf.orng.shindig.spi.vivo.VIVOPersonService;
 import edu.ucsf.orng.shindig.spi.profiles.ProfilesPersonService;
@@ -48,7 +49,17 @@ public class OrngPropertiesModule extends PropertiesModule {//SocialApiGuiceModu
 	    bind(ActivityService.class).to(OrngActivityService.class);
         bind(MessageService.class).to(OrngMessageService.class);
 	    bind(AppDataService.class).to(OrngAppDataService.class);
-	    bind(RdfService.class).to(RdfBabelService.class);
+	    
+		String rdfConverter = getProperties().getProperty("orng.RDFConverter");		
+	    if ("babel".equalsIgnoreCase(rdfConverter)) {
+	    	bind(RdfService.class).to(RdfBabelService.class);
+	    } 
+	    else if ("elda".equalsIgnoreCase(rdfConverter)) {
+	    	bind(RdfService.class).to(RdfEldaService.class);	    	
+	    }
+		else {
+			throw new RuntimeException("orng.RDFConverter not set properly. Needs to be babel or elda, is :" + rdfConverter);
+		}
 
 		String orngSystem = getProperties().getProperty("orng.system");		
 		if ("Profiles".equalsIgnoreCase(orngSystem)) {

@@ -53,13 +53,11 @@ import edu.ucsf.orng.shindig.spi.RdfService;
 public class RdfHandler {
   private final RdfService rdfService;
   private final ContainerConfig config;
-  private String orngURL;
 
   @Inject
-  public RdfHandler(RdfService rdfService, ContainerConfig config, @Named("orng.url") String orngURL) {
+  public RdfHandler(RdfService rdfService, ContainerConfig config) {
     this.rdfService = rdfService;
     this.config = config;
-    this.orngURL = orngURL;
   }
 
   /**
@@ -71,21 +69,22 @@ public class RdfHandler {
   public Future<?> get(SocialRequestItem request) throws ProtocolException {
     GroupId groupId = request.getGroup();
     Set<String> optionalPersonId = ImmutableSet.copyOf(request.getListParameter("personId"));
-    Set<String> optionalRDFUrl = ImmutableSet.copyOf(request.getListParameter("url"));
+    Set<String> optionalURI = ImmutableSet.copyOf(request.getListParameter("uri"));
+    String output = request.getParameter("output");
     
-    Set<String> urls = new HashSet<String>();
-    urls.addAll(makeIdsIntoURLs(request.getUsers(), request.getToken()));
-    urls.addAll(optionalRDFUrl);
+    Set<String> uris = new HashSet<String>();
+    uris.addAll(makeIdsIntoURIs(request.getUsers(), request.getToken()));
+    uris.addAll(optionalURI);
 
     // Preconditions
-    HandlerPreconditions.requireNotEmpty(urls, "No URI's specified");
+    HandlerPreconditions.requireNotEmpty(uris, "No URI's specified");
 
     CollectionOptions options = new CollectionOptions(request);
 
-    if (urls.size() == 1) {
-    	return rdfService.getItem(urls.iterator().next());
+    if (uris.size() == 1) {
+    	return rdfService.getItem(uris.iterator().next(), output);
     } else {
-        return rdfService.getItems(urls, groupId, options, request.getToken());
+        return rdfService.getItems(uris, output, groupId, options, request.getToken());
     }
   }
 
@@ -97,20 +96,15 @@ public class RdfHandler {
         "${Cur['gadgets.features'].opensocial.supportedOntologies}");
   }
 
-	public Set<String> makeIdsIntoURLs(Set<UserId> userIds, SecurityToken token) {
+	public Set<String> makeIdsIntoURIs(Set<UserId> userIds, SecurityToken token) {
 		Set<String> urls = new HashSet<String>();
 		for (UserId id : userIds) {
 			String strId = id.getUserId(token);
 			if (strId != null) {
-				urls.add( makeIdIntoURL(strId) );
+				urls.add(strId);
 			}
 		}
 		return urls;
 	}
 	
-	public String makeIdIntoURL(String strId) {
-		return orngURL + "/display/n" + strId + "?format=rdfxml";
-	}
-
-
 }

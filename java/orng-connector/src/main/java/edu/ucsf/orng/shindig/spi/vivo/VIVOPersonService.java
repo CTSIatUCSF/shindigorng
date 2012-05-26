@@ -34,7 +34,6 @@ import com.google.inject.Inject;
 import edu.ucsf.orng.shindig.model.OrngName;
 import edu.ucsf.orng.shindig.model.OrngOrganization;
 import edu.ucsf.orng.shindig.model.OrngPerson;
-import edu.ucsf.orng.shindig.service.RdfHandler;
 import edu.ucsf.orng.shindig.spi.RdfService;
 
 /**
@@ -44,13 +43,11 @@ public class VIVOPersonService implements PersonService {
 
 	private static final Logger LOG = Logger.getLogger(VIVOPersonService.class.getName());	
 	
-	private final RdfHandler rdfHandler;
 	private final RdfService rdfService;
 
 	@Inject
-	public VIVOPersonService(RdfHandler rdfHandler, RdfService rdfService)
+	public VIVOPersonService(RdfService rdfService)
 			throws Exception {
-		this.rdfHandler = rdfHandler;
 		this.rdfService = rdfService;
 	}
 
@@ -169,8 +166,8 @@ public class VIVOPersonService implements PersonService {
 		
 		try {
 			// There can be only one!
-			if (Integer.parseInt(strId) > 0) {
-				Person personObj = parsePerson(strId, rdfService.getRDF(rdfHandler.makeIdIntoURL(strId)));				
+			if (strId != null) {
+				Person personObj = parsePerson(strId, rdfService.getRDF(strId, RdfService.MINIMAL));				
 				return ImmediateFuture.newInstance(personObj);
 			}
 		} catch (MalformedURLException e) {
@@ -230,32 +227,27 @@ public class VIVOPersonService implements PersonService {
 		if (json == null) {
 			return retVal;
 		}
-		JSONArray items = json.getJSONArray("items");
-		for (int i = 0; i < items.length(); i++) {
-			JSONObject item = items.getJSONObject(i);
-			if (item.getString("uri") != null) {
-				retVal.setProfileUrl(item.getString("uri"));
-			}
-			if (item.getString("mainImage") != null) {
-				retVal.setThumbnailUrl(item.getString("mainImage"));
-			}
-			if (item.getString("label") != null) {
-				retVal.setDisplayName(item.getString("label"));
-			}
-			if (item.getString("primaryEmail") != null) {
-				List<ListField> emails = new ArrayList<ListField>();
-				emails.add( new ListFieldImpl(null, item.getString("primaryEmail")) );
-				retVal.setEmails(emails);
-			}
-			Name name = new OrngName();
-			if (item.getString("firstName") != null) {				
-				name.setGivenName(item.getString("firstName"));
-			}
-			if (item.getString("lastName") != null) {				
-				name.setFamilyName(item.getString("lastName"));
-			}
-			retVal.setName(name);
+
+		retVal.setProfileUrl(strId);
+		if (json.has("mainImage") && json.getString("mainImage") != null) {
+			retVal.setThumbnailUrl(json.getString("mainImage"));
 		}
+		if (json.has("label") && json.getString("label") != null) {
+			retVal.setDisplayName(json.getString("label"));
+		}
+		if (json.has("primaryEmail") && json.getString("primaryEmail") != null) {
+			List<ListField> emails = new ArrayList<ListField>();
+			emails.add( new ListFieldImpl(null, json.getString("primaryEmail")) );
+			retVal.setEmails(emails);
+		}
+		Name name = new OrngName();
+		if (json.has("fistName") && json.getString("firstName") != null) {				
+			name.setGivenName(json.getString("firstName"));
+		}
+		if (json.has("lastName") & json.getString("lastName") != null) {				
+			name.setFamilyName(json.getString("lastName"));
+		}
+		retVal.setName(name);
 		
 /**		NodeList list = curNode.getChildNodes();
 		for (int i = 0; i < list.getLength(); i++) {

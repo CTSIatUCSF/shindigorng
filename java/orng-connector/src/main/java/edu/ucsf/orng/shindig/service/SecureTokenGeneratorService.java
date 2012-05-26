@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.Runnable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URLDecoder;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -144,7 +146,7 @@ public class SecureTokenGeneratorService implements Runnable {
 		}
 	}
 
-	String convert(String input) throws BlobCrypterException {
+	String convert(String input) throws BlobCrypterException, UnsupportedEncodingException {
 	    LOG.log(Level.INFO, "Received " + input + ": length = " + input.length());
 		Map<String, String> tokenParams = getQueryMap(input);
 
@@ -164,13 +166,13 @@ public class SecureTokenGeneratorService implements Runnable {
 		return token;
 	}
 
-	private static Map<String, String> getQueryMap(String query) {
+	private static Map<String, String> getQueryMap(String query) throws UnsupportedEncodingException {
 		String[] params = query.split("&");
 		Map<String, String> map = Maps.newHashMap();
 		for (String param : params) {
 			String name = param.split("=")[0];
 			String value = param.split("=")[1];
-			map.put(name, value);
+			map.put(name, OWNER_KEY.equals(name) || VIEWER_KEY.equals(name) ? URLDecoder.decode(value, "UTF-8") : value);
 		}
 		return map;
 	}

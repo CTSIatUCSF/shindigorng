@@ -41,6 +41,7 @@ gadgets.util.registerOnLoadHandler(function() {
       */
     osapi.rdf.getViewer = function(options) {
       options = options || {};
+      options.output = options.output || "minimal";
       options.userId = '@viewer';
       options.groupId = '@self';
       return osapi.rdf.get(options);
@@ -55,6 +56,7 @@ gadgets.util.registerOnLoadHandler(function() {
       */
     osapi.rdf.getViewerFriends = function(options) {
       options = options || {};
+      options.output = options.output || "minimal";
       options.userId = '@viewer';
       options.groupId = '@friends';
       return osapi.rdf.get(options);
@@ -69,6 +71,7 @@ gadgets.util.registerOnLoadHandler(function() {
       */
     osapi.rdf.getOwner = function(options) {
       options = options || {};
+      options.output = options.output || "minimal";
       options.userId = '@owner';
       options.groupId = '@self';
       return osapi.rdf.get(options);
@@ -83,6 +86,7 @@ gadgets.util.registerOnLoadHandler(function() {
       */
     osapi.rdf.getOwnerFriends = function(options) {
       options = options || {};
+      options.output = options.output || "minimal";
       options.userId = '@owner';
       options.groupId = '@friends';
       return osapi.rdf.get(options);
@@ -90,13 +94,14 @@ gadgets.util.registerOnLoadHandler(function() {
 
     /**
      * Function to get any RDF converted to JSON
-     * @param {String} The url for the specific request.
+     * @param {String} The uri for the specific request.
      */
-    osapi.rdf.getRDF = function(url) {
-        var options = {};
+    osapi.rdf.getRDF = function(uri, options) {
+        var options = options || {};
+        options.output = options.output || "minimal";
         options.userId = '@userId';
         options.groupId = '@self';
-        options.url = url;
+        options.uri = uri;
         return osapi.rdf.get(options);
       };
   }

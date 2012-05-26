@@ -1,0 +1,9 @@
+If you want to build the non-microsoft jars yourself, you can grab source from the following locations:
+
+https://github.com/CTSIatUCSF/babel (git based)
+http://code.google.com/p/elda/ (Mercurial based)
+
+Both projects are Maven based. Beware of the generate-sources part of elda,
+I find that it replaces the API.java code with a bad version when it runs so
+I make sure to avoid that part of the lifecycle!
+
