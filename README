@@ -35,8 +35,7 @@ Build
 Install
 	Create a C:\shindig\conf directory.  
 	Copy the shindig-orng\java\shindig-orng-connector\conf\shindig.orng.properties file into the directory and edit as needed 
-	for your environment.  The four values that require editing are: ProfilesEndpoint, dbURL, dbUser, dbPassword.
-	Note that 
+	for your environment.  
 
 	Put shindig-server-2.0.2.war into your webapps directory under Tomcat and rename to shindigorng.war
 
