@@ -69,7 +69,7 @@ public class RdfEldaService implements RdfService {
         boolean fromRoot = src.contains(root, null, (RDFNode)null);
         
         StringWriter out = new StringWriter();
-        boolean prettyPrint = true;
+        boolean prettyPrint = false;
         
         if (fromRoot) {
             Encoder.get().encodeRecursive(src, roots, out, prettyPrint);

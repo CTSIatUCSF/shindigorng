@@ -15,14 +15,18 @@ Download
 Build
 	The project can be built with Maven, but first you need to install some external jars into your maven repository. 
 	This is a pain, but you only have to do it once.
-	Go to ..\shindig-orng-connector\jars\ and type the following commands:
+	
+	Note: The \'s need to be appropriate for your operating system!  The following instructions show Windows style slashes, 
+	use UNIX style as appropriate.
+	
+	Go to ..\orng-connector\jars\ and type the following commands:
 		>mvn install:install-file -Dfile=jdbc4-3.0.jar -DgroupId=com.microsoft.jdbc -DartifactId=jdbc4 -Dversion=3.0 -Dpackaging=jar
-		>mvn install:install-file -Dfile=json-rdf\json-rdf-1.2.12.jar -pomFile=json-rdf\pom.xml
+		>mvn install:install-file -Dfile=json-rdf\json-rdf-1.2.12.jar -DpomFile=json-rdf\pom.xml
 		>mvn install:install-file -Dfile=babel-bibtex-converter\babel-bibtex-converter-1.0-SNAPSHOT.jar -DpomFile=babel-bibtex-converter\pom.xml
 		>mvn install:install-file -Dfile=babel-engine\babel-engine-1.0-SNAPSHOT.jar -DpomFile=babel-engine\pom.xml
 		>mvn install:install-file -Dfile=babel-exhibit-converter\babel-exhibit-converter-1.0-SNAPSHOT.jar -DpomFile=babel-exhibit-converter\pom.xml
 		>mvn install:install-file -Dfile=babel-interfaces\babel-interfaces-1.0-SNAPSHOT.jar -DpomFile=babel-interfaces\pom.xml
-		>mvn install:install-file -Dfile=babel-tsv-converter\babel-tsv-converter-1.0-SNAPSHOT.jar -DpomFile==babel-tsv-converter\pom.xml
+		>mvn install:install-file -Dfile=babel-tsv-converter\babel-tsv-converter-1.0-SNAPSHOT.jar -DpomFile=babel-tsv-converter\pom.xml
 		>mvn install:install-file -Dfile=babel-xls-converter\babel-xls-converter-1.0-SNAPSHOT.jar -DpomFile=babel-xls-converter\pom.xml
 
 	See http://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html for more details
@@ -34,7 +38,7 @@ Build
 	
 Install
 	Create a C:\shindig\conf directory.  
-	Copy the shindig-orng\java\shindig-orng-connector\conf\shindig.orng.properties file into the directory and edit as needed 
+	Copy the shindig-orng\java\orng-connector\conf\shindig.orng.properties file into the directory and edit as needed 
 	for your environment.  
 
 	Put shindig-server-2.0.2.war into your webapps directory under Tomcat and rename to shindigorng.war
