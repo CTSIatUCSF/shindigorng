@@ -53,7 +53,7 @@ Install
 			
 	Create a secure key for Shindig.  
 		The default location for this key is \shindig\openssl\securitytokenkey.txt as set in 
-		shindig-orng\java\shindig-orng-connector\src\main\resources\orng-container.js
+		shindig-orng\java\orng-connector\src\main\resources\orng-container.js
 		The easiest way to create the key is to find a linux machine and issue the following command:
 			>dd if=/dev/random bs=32 count=1  | openssl base64 > securitytokenkey.txt 
 
