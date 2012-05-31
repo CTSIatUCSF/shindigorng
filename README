@@ -40,6 +40,8 @@ Install
 	Create a C:\shindig\conf directory.  
 	Copy the shindig-orng\java\orng-connector\conf\shindig.orng.properties file into the directory and edit as needed 
 	for your environment.  
+	
+	Make sure Tomcat isn't running!
 
 	Put shindig-server-2.0.2.war into your webapps directory under Tomcat and rename to shindigorng.war
 
@@ -79,9 +81,9 @@ Eclipse
 		Double click on the server to bring up the configuration screen.  
 		Click to the Modules tab (botton of pane), add an external web module and browse to the exploded 
 		shindig-server-2.0.2 WAR (shown below)  
-		Set path to /shindig:
+		Set path to /shindigorng:
 			Document base: ..\shindig-orng\java\server\target\shindig-server-2.0.2
-			Path /shindig 
+			Path /shindigorng 
 	
 		Click back to the Overview tab
 		Click the 'Open launch configuration' in the upper left at the bottom of the General Information section.
