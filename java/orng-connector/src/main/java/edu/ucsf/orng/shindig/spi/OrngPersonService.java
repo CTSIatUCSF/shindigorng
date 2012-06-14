@@ -21,33 +21,27 @@ import org.apache.shindig.social.opensocial.spi.CollectionOptions;
 import org.apache.shindig.social.opensocial.spi.GroupId;
 import org.apache.shindig.social.opensocial.spi.PersonService;
 import org.apache.shindig.social.opensocial.spi.UserId;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
-import edu.ucsf.orng.shindig.config.OrngProperties;
 import edu.ucsf.orng.shindig.model.OrngName;
 import edu.ucsf.orng.shindig.model.OrngPerson;
 
 /**
  * Implementation of supported services backed by a JSON DB.
  */
-public class OrngPersonService implements PersonService, OrngProperties {
+public class OrngPersonService implements PersonService {
 
 	private static final Logger LOG = Logger.getLogger(OrngPersonService.class.getName());	
 	
 	private final RdfService rdfService;
 
-	private String system;
-
 	@Inject
-	public OrngPersonService(@Named("orng.system") String system, RdfService rdfService)
+	public OrngPersonService(RdfService rdfService)
 	{
-		this.system = system;
 		this.rdfService = rdfService;
 	}
 
@@ -78,14 +72,7 @@ public class OrngPersonService implements PersonService, OrngProperties {
 		try {
 			// There can be only one!
 			if (strId != null) {
-				// I hope this is temporary!  Need to do this to get rdfxml out of profiles
-				JSONObject personJSON = null;
-				if (PROFILES.equalsIgnoreCase(system)) {
-					personJSON = rdfService.getRDF(strId +  strId.substring(strId.lastIndexOf('/')) + ".rdf", RdfService.MINIMAL);
-				}
-				else {
-					personJSON = rdfService.getRDF(strId, RdfService.MINIMAL);
-				}
+				JSONObject personJSON =  rdfService.getRDF(strId, RdfService.MINIMAL);;
 				Person personObj = parsePerson(strId, personJSON);
 				return ImmediateFuture.newInstance(personObj);
 			}

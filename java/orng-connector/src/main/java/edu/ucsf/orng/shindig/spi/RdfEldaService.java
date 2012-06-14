@@ -62,7 +62,11 @@ public class RdfEldaService implements RdfService {
 	}
 
 	public JSONObject getRDF(String uri, String output) throws Exception {
-        Model src = FileManager.get().loadModel(uri);
+		String url = uri;
+		if (!url.toLowerCase().endsWith(".rdf")) {
+			url +=  url.substring(url.lastIndexOf('/')) + ".rdf";
+		}
+        Model src = FileManager.get().loadModel(url);
         Resource root = src.getResource(uri);
         List<Resource> roots = new ArrayList<Resource>();
         roots.add( root );
@@ -87,8 +91,7 @@ public class RdfEldaService implements RdfService {
         		JSONArray items = retval.getJSONArray("results");
         		for (int i = 0; i < items.length(); i++) {
         			JSONObject obj = items.getJSONObject(i);
-        			// changed from equalsIgnoreCase to startsWith to catch /foo/foo.rdf cases
-        			if (obj.has("_about") && uri.toLowerCase().startsWith(obj.getString("_about").toLowerCase())) {
+        			if (obj.has("_about") && uri.toLowerCase().equalsIgnoreCase(obj.getString("_about"))) {
         				LOG.info(obj.toString());
         				return obj;
         			}
