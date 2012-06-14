@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -23,13 +22,37 @@ import org.apache.shindig.social.opensocial.spi.GroupId;
 import org.apache.shindig.social.opensocial.spi.UserId;
 
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
+import edu.ucsf.orng.shindig.config.OrngProperties;
 
 
-public class OrngAppDataService implements AppDataService {
+public class OrngAppDataService implements AppDataService, OrngProperties {
 	
 	private static final Logger LOG = Logger.getLogger(OrngAppDataService.class.getName());	
 	
-    public Future<DataCollection> getPersonData(Set<UserId> userIds, GroupId groupId,
+	private String table;
+	private String delete_sp;
+	private String upsert_sp;
+	
+	@Inject
+	public OrngAppDataService(
+			@Named("orng.system") String system)
+			throws Exception {
+		if (PROFILES.equalsIgnoreCase(system)) {
+			this.table = "[ORNG.].[AppData]";
+			this.delete_sp = "[ORNG.].[DeleteAppData]";
+			this.upsert_sp = "[ORNG.].[UpsertAppData]";
+		}
+		else {
+			this.table = "orng_appdata";
+			this.delete_sp = "orng_deleteAppData";
+			this.upsert_sp = "orng_upsertAppData";
+		}
+	}
+
+	public Future<DataCollection> getPersonData(Set<UserId> userIds, GroupId groupId,
     	      String appId, Set<String> fields, SecurityToken token) throws ProtocolException {    
         Connection conn = OrngUtil.getConnection();
         try {
@@ -100,7 +123,7 @@ public class OrngAppDataService implements AppDataService {
     private String getData(Connection conn, String id, String appId, String key)
             throws SQLException {
         PreparedStatement ps = conn
-                .prepareStatement("select value from shindig_appdata where appId=? AND userId = ? AND keyName = ?");
+                .prepareStatement("select value from " + table + " where appId=? AND userId = ? AND keyName = ?");
         ps.setString(1, appId);
         ps.setString(2, id);
         ps.setString(3, key);
@@ -114,7 +137,7 @@ public class OrngAppDataService implements AppDataService {
     private void deleteData(Connection conn, String id, String appId, String key)
             throws SQLException {
         CallableStatement cs = conn
-		        .prepareCall("{ call shindig_deleteAppData(?, ?, ?)}");
+		        .prepareCall("{ call " + delete_sp + "(?, ?, ?)}");
 		cs.setString(1, id);
 		cs.setInt(2, Integer.parseInt(appId));
 		cs.setString(3, key);
@@ -124,7 +147,7 @@ public class OrngAppDataService implements AppDataService {
     private void upsertData(Connection conn, String id, String appId,
             String key, String value) throws SQLException {
         CallableStatement cs = conn
-                .prepareCall("{ call shindig_upsertAppData(?, ?, ?, ?)}");
+                .prepareCall("{ call " + upsert_sp + "(?, ?, ?, ?)}");
         cs.setString(1,id);
         cs.setInt(2, Integer.parseInt(appId));
         cs.setString(3, key);

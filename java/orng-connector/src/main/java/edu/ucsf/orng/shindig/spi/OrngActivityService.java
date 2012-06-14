@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLXML;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -39,20 +38,26 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import edu.ucsf.orng.shindig.config.OrngProperties;
 
-public class OrngActivityService implements ActivityService {
 
-	  /**
-	   * The XML<->Bean converter
-	   */
-	  private BeanConverter converter;
+public class OrngActivityService implements ActivityService, OrngProperties{
 
-	  @Inject
-	  public OrngActivityService(@Named("shindig.bean.converter.xml")
-	  BeanConverter converter) throws Exception {
-	    this.converter = converter;
-	  }
-	  
+	/**
+	 * The XML<->Bean converter
+	 */
+	private BeanConverter converter;
+	private String table;
+
+	@Inject
+	public OrngActivityService(
+			@Named("orng.system") String system,
+			@Named("shindig.bean.converter.xml") BeanConverter converter)
+			throws Exception {
+		this.converter = converter;
+		this.table = PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Activity]" : "orng_activity"; 
+	}
+
 	public Future<RestfulCollection<Activity>> getActivities(
 			Set<UserId> userIds, GroupId groupId, String appId,
 			Set<String> fields, CollectionOptions options, SecurityToken token)
@@ -169,7 +174,7 @@ public class OrngActivityService implements ActivityService {
 
 
 	private List<Activity> getAllActivities(Connection conn, String id, String appId) throws SQLException {
-		String sql = "select activity from shindig_activity where userId = ?" + (appId != null ? " AND appId=" + appId: "");
+		String sql = "select activity from " + table + " where userId = ?" + (appId != null ? " AND appId=" + appId: "");
 		PreparedStatement ps = conn.prepareStatement(sql);
 		ps.setString(1, id);		
 		ResultSet rs = ps.executeQuery();
@@ -182,7 +187,7 @@ public class OrngActivityService implements ActivityService {
 
 	private Activity getActivity(Connection conn, String id, String appId,
 			int activityId) throws SQLException {
-		String sql = "select activity from shindig_activity where userId = ? AND activityId = ?" + (appId != null ? " AND appId=" + appId: "");
+		String sql = "select activity from " + table + " where userId = ? AND activityId = ?" + (appId != null ? " AND appId=" + appId: "");
 		PreparedStatement ps = conn.prepareStatement(sql);
 		ps.setString(1, id);
 		ps.setInt(2, activityId);
@@ -196,7 +201,7 @@ public class OrngActivityService implements ActivityService {
 	private void deleteActivity(Connection conn, String id, String appId,
 			int activityId) throws SQLException {
 		PreparedStatement ps = conn
-				.prepareStatement("delete from shindig_activity where appId=? AND userId = ? AND activityId = ?");
+				.prepareStatement("delete from " + table + " where appId=? AND userId = ? AND activityId = ?");
 		ps.setString(1, appId);
 		ps.setString(2, id);
 		ps.setInt(3, activityId);
@@ -226,7 +231,7 @@ public class OrngActivityService implements ActivityService {
 		// To TEST that we can rebuild object
         //Activity foo = converter.convertToObject(baos.toString(), Activity.class);
 		
-		String sql = "insert into shindig_activity (appId, userId, activity" + (
+		String sql = "insert into " + table + " (appId, userId, activity" + (
 				activityId > 0 ? ", activityId) VALUES (?,?,?,?)" : ") VALUES (?,?,?)");
 		PreparedStatement ps = conn
 				.prepareStatement(sql);

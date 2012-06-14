@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -22,16 +21,28 @@ import org.apache.shindig.social.opensocial.spi.MessageService;
 import org.apache.shindig.social.opensocial.spi.UserId;
 
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
+import edu.ucsf.orng.shindig.config.OrngProperties;
 import edu.ucsf.orng.shindig.model.OrngMessage;
 import edu.ucsf.orng.shindig.model.OrngMessageCollection;
 
 /*
  * TODO multi-recipient messages, multi collection messages, delete, groups
  */
-public class OrngMessageService implements MessageService {
+public class OrngMessageService implements MessageService, OrngProperties {
 
-    /**
+	private String table;
+
+	@Inject
+	public OrngMessageService(
+			@Named("orng.system") String system)
+			throws Exception {
+		this.table = PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Messages]" : "orng_messages"; 
+	}
+	
+	/**
      * Post a message for a set of users.
      * 
      * @param userId
@@ -110,7 +121,7 @@ public class OrngMessageService implements MessageService {
     private List<Message> getMessages(Connection conn, String user, String coll, List<String> msgIds)
             throws SQLException {
         List<Message> retVal = Lists.newArrayList();
-        String sql = "select * from shindig_messages where recipient = ? ";
+        String sql = "select * from " + table + " where recipient = ? ";
         if (coll != null && !coll.trim().equals("")) {
             sql += "AND collection = ? ";
         }
@@ -155,7 +166,7 @@ public class OrngMessageService implements MessageService {
 
     private void addMessage(Connection conn, String from, String to, String coll, Message msg)
             throws SQLException {
-        String sql = "insert into shindig_messages (msgId, coll, title, body, senderId, recipientId) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "insert into " + table + " (msgId, coll, title, body, senderId, recipientId) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = conn.prepareCall(sql);
         ps.setString(0, msg.getId());
         ps.setString(1, coll);
@@ -169,7 +180,7 @@ public class OrngMessageService implements MessageService {
     private List<MessageCollection> getMessageCollections(Connection conn, String user)
             throws SQLException {
         List<MessageCollection> retVal = Lists.newArrayList();
-        String sql = "select distinct(coll) from shindig_messages where recipient = ? ";
+        String sql = "select distinct(coll) from " + table + " where recipient = ? ";
         
         PreparedStatement ps = conn.prepareCall(sql);
         int index = 0;
