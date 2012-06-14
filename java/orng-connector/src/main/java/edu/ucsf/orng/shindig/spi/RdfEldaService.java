@@ -87,7 +87,8 @@ public class RdfEldaService implements RdfService {
         		JSONArray items = retval.getJSONArray("results");
         		for (int i = 0; i < items.length(); i++) {
         			JSONObject obj = items.getJSONObject(i);
-        			if (obj.has("_about") && uri.equalsIgnoreCase(obj.getString("_about"))) {
+        			// changed from equalsIgnoreCase to startsWith to catch /foo/foo.rdf cases
+        			if (obj.has("_about") && uri.toLowerCase().startsWith(obj.getString("_about").toLowerCase())) {
         				LOG.info(obj.toString());
         				return obj;
         			}
