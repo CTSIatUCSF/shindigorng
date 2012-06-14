@@ -29,20 +29,15 @@ import org.apache.shindig.protocol.HandlerPreconditions;
 import org.apache.shindig.protocol.Operation;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RequestItem;
-import org.apache.shindig.protocol.RestfulCollection;
 import org.apache.shindig.protocol.Service;
-import org.apache.shindig.social.opensocial.model.Person;
 import org.apache.shindig.social.opensocial.service.SocialRequestItem;
 import org.apache.shindig.social.opensocial.spi.CollectionOptions;
 import org.apache.shindig.social.opensocial.spi.GroupId;
-import org.apache.shindig.social.opensocial.spi.PersonService;
 import org.apache.shindig.social.opensocial.spi.UserId;
-import org.json.JSONObject;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import edu.ucsf.orng.shindig.spi.RdfService;
 

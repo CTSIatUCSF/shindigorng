@@ -1,5 +1,6 @@
 package edu.ucsf.orng.shindig.config;
 
+import org.apache.shindig.auth.SecurityTokenCodec;
 import org.apache.shindig.common.PropertiesModule;
 import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
 import org.apache.shindig.social.opensocial.spi.ActivityService;
@@ -12,7 +13,8 @@ import org.apache.shindig.social.sample.spi.JsonDbOpensocialService;
 
 import com.google.inject.name.Names;
 
-import edu.ucsf.orng.shindig.service.SecureTokenGeneratorService;
+import edu.ucsf.orng.shindig.auth.OrngCrypterSecurityTokenCodec;
+import edu.ucsf.orng.shindig.spi.OrngPersonService;
 import edu.ucsf.orng.shindig.spi.OrngUtil;
 import edu.ucsf.orng.shindig.spi.OrngActivityService;
 import edu.ucsf.orng.shindig.spi.OrngMessageService;
@@ -20,17 +22,14 @@ import edu.ucsf.orng.shindig.spi.OrngAppDataService;
 import edu.ucsf.orng.shindig.spi.RdfBabelService;
 import edu.ucsf.orng.shindig.spi.RdfEldaService;
 import edu.ucsf.orng.shindig.spi.RdfService;
-import edu.ucsf.orng.shindig.spi.vivo.VIVOPersonService;
-import edu.ucsf.orng.shindig.spi.profiles.ProfilesPersonService;
 
-public class OrngPropertiesModule extends PropertiesModule {//SocialApiGuiceModule {
+public class OrngPropertiesModule extends PropertiesModule implements OrngProperties {//SocialApiGuiceModule {
 	
-	private final static String DEFAULT_PROPERTIES = "shindig.orng.properties";
-	
-	SecureTokenGeneratorService service = null;
+	private final static String DEFAULT_PROPERTIES = "shindigorng.properties";	
 	
 	public OrngPropertiesModule() {
 		super(DEFAULT_PROPERTIES);
+		getProperties().setProperty("shindig.containers.default", "res://" + this.getProperties().getProperty("orng.system").toLowerCase() + "-container.js");		
 	}
 
 	@Override
@@ -46,6 +45,12 @@ public class OrngPropertiesModule extends PropertiesModule {//SocialApiGuiceModu
 		}
 	    requestStaticInjection(OrngUtil.class);
 
+		String orngSystem = getProperties().getProperty("orng.system");		
+		if (!PROFILES.equalsIgnoreCase(orngSystem) && !VIVO.equalsIgnoreCase(orngSystem)) {
+			throw new RuntimeException("orng.system not set properly. Needs to be Profiles or VIVO, is :" + orngSystem);
+		}
+	    
+	    bind(SecurityTokenCodec.class).to(OrngCrypterSecurityTokenCodec.class);
 	    bind(ActivityService.class).to(OrngActivityService.class);
         bind(MessageService.class).to(OrngMessageService.class);
 	    bind(AppDataService.class).to(OrngAppDataService.class);
@@ -60,33 +65,20 @@ public class OrngPropertiesModule extends PropertiesModule {//SocialApiGuiceModu
 		else {
 			throw new RuntimeException("orng.RDFConverter not set properly. Needs to be babel or elda, is :" + rdfConverter);
 		}
+		bind(PersonService.class).to(OrngPersonService.class);
 
-		String orngSystem = getProperties().getProperty("orng.system");		
-		if ("Profiles".equalsIgnoreCase(orngSystem)) {
-			bind(PersonService.class).to(ProfilesPersonService.class);
-		}
-		else if ("VIVO".equalsIgnoreCase(orngSystem)) {
-			bind(PersonService.class).to(VIVOPersonService.class);
-		}
-		else {
-			throw new RuntimeException("orng.system not set properly. Needs to be Profiles or VIVO, is :" + orngSystem);
-		}
-
-        // Note from Eric Meeks.  We do not have this yet
+        // Note from Eric Meeks.  We do not use this yet
 		bind(MediaItemService.class).to(JsonDbOpensocialService.class);
         bind(OAuthDataStore.class).to(SampleOAuthDataStore.class);
         
         // start token service thread
         // pass in port now because waiting for injection would be too late
+        /*
 		service = new SecureTokenGeneratorService(Integer.parseInt(getProperties().getProperty("orng.tokenservice.port")));
 		Thread thread = new Thread(service);
 		thread.setDaemon(true);
 		thread.start();
-		requestInjection(service);
+		requestInjection(service); */
 	}
 
-	SecureTokenGeneratorService getSecureTokenGeneratorService(SecureTokenGeneratorService service) {
-		return service;
-	}
-	
 }
