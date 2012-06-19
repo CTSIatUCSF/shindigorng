@@ -23,3 +23,9 @@ This product includes software (opensocial-resources) developed by
 The OpenSocial Foundation (http://opensocial-resources.googlecode.com/svn/spec/0.8/)
 
 This product contains software (sha1 JS impl) developed by Google Inc.
+
+This product contains software (Babel) developed by the SIMILE Project
+and originally written by David Huynh
+(http://simile.mit.edu/wiki/Babel), with edits by Eric Meeks from the
+University of California, San Francisco, and licensed under the BSD
+license. (https://github.com/EricMeeks/babel)
