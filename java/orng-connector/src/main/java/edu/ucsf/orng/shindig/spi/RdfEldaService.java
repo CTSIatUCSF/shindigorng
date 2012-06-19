@@ -62,11 +62,7 @@ public class RdfEldaService implements RdfService {
 	}
 
 	public JSONObject getRDF(String uri, String output) throws Exception {
-		String url = uri;
-		if (!url.toLowerCase().endsWith(".rdf")) {
-			url +=  url.substring(url.lastIndexOf('/')) + ".rdf";
-		}
-        Model src = FileManager.get().loadModel(url);
+        Model src = FileManager.get().loadModel(uri);
         Resource root = src.getResource(uri);
         List<Resource> roots = new ArrayList<Resource>();
         roots.add( root );
