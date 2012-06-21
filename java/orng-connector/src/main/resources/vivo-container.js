@@ -142,7 +142,7 @@
 	    },
 	    "canvas" : {
 	      "isOnlyVisible" : true,
-	      "urlTemplate" : "gadget?",
+	      "urlTemplate" : "orng?",
 	      "aliases" : ["FULL_PAGE"]
 	    }
 	  },

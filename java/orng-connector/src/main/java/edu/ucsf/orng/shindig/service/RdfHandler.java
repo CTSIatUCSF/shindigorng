@@ -46,50 +46,55 @@ import edu.ucsf.orng.shindig.spi.RdfService;
  */
 @Service(name = "rdf", path = "/{userId}+/{groupId}/{personId}+")
 public class RdfHandler {
-  private final RdfService rdfService;
-  private final ContainerConfig config;
+	private final RdfService rdfService;
+	private final ContainerConfig config;
 
-  @Inject
-  public RdfHandler(RdfService rdfService, ContainerConfig config) {
-    this.rdfService = rdfService;
-    this.config = config;
-  }
+	@Inject
+	public RdfHandler(RdfService rdfService, ContainerConfig config) {
+		this.rdfService = rdfService;
+		this.config = config;
+	}
 
-  /**
-   * Allowed end-points /rdf/{userId}+/{groupId} /people/{userId}/{groupId}/{optionalPersonId}+
-   *
-   * examples: /rdf/john.doe/@all /people/john.doe/@friends /people/john.doe/@self
-   */
-  @Operation(httpMethods = "GET")
-  public Future<?> get(SocialRequestItem request) throws ProtocolException {
-    GroupId groupId = request.getGroup();
-    Set<String> optionalPersonId = ImmutableSet.copyOf(request.getListParameter("personId"));
-    Set<String> optionalURI = ImmutableSet.copyOf(request.getListParameter("uri"));
-    String output = request.getParameter("output");
-    
-    Set<String> uris = new HashSet<String>();
-    uris.addAll(makeIdsIntoURIs(request.getUsers(), request.getToken()));
-    uris.addAll(optionalURI);
+	/**
+	 * Allowed end-points /rdf/{userId}+/{groupId}
+	 * /people/{userId}/{groupId}/{optionalPersonId}+
+	 * 
+	 * examples: /rdf/john.doe/@all /people/john.doe/@friends /people/john.doe/@self
+	 */
+	@Operation(httpMethods = "GET")
+	public Future<?> get(SocialRequestItem request) throws ProtocolException {
+		GroupId groupId = request.getGroup();
+		Set<String> optionalPersonId = ImmutableSet.copyOf(request
+				.getListParameter("personId"));
+		Set<String> optionalURI = ImmutableSet.copyOf(request
+				.getListParameter("uri"));
+		String output = request.getParameter("output");
 
-    // Preconditions
-    HandlerPreconditions.requireNotEmpty(uris, "No URI's specified");
+		Set<String> uris = new HashSet<String>();
+		uris.addAll(makeIdsIntoURIs(request.getUsers(), request.getToken()));
+		uris.addAll(optionalURI);
 
-    CollectionOptions options = new CollectionOptions(request);
+		// Preconditions
+		HandlerPreconditions.requireNotEmpty(uris, "No URI's specified");
 
-    if (uris.size() == 1) {
-    	return rdfService.getItem(uris.iterator().next(), output);
-    } else {
-        return rdfService.getItems(uris, output, groupId, options, request.getToken());
-    }
-  }
+		CollectionOptions options = new CollectionOptions(request);
 
-  @Operation(httpMethods = "GET", path="/@supportedOntologies")
-  public List<Object> supportedOntologies(RequestItem request) {
-    // TODO: Would be nice if name in config matched name of service.
-    String container = Objects.firstNonNull(request.getToken().getContainer(), "default");
-    return config.getList(container,
-        "${Cur['gadgets.features'].opensocial.supportedOntologies}");
-  }
+		if (uris.size() == 1) {
+			return rdfService.getItem(uris.iterator().next(), output);
+		} else {
+			return rdfService.getItems(uris, output, groupId, options,
+					request.getToken());
+		}
+	}
+
+	@Operation(httpMethods = "GET", path = "/@supportedOntologies")
+	public List<Object> supportedOntologies(RequestItem request) {
+		// TODO: Would be nice if name in config matched name of service.
+		String container = Objects.firstNonNull(request.getToken()
+				.getContainer(), "default");
+		return config.getList(container,
+				"${Cur['gadgets.features'].opensocial.supportedOntologies}");
+	}
 
 	public Set<String> makeIdsIntoURIs(Set<UserId> userIds, SecurityToken token) {
 		Set<String> urls = new HashSet<String>();
@@ -101,5 +106,5 @@ public class RdfHandler {
 		}
 		return urls;
 	}
-	
+
 }
