@@ -23,20 +23,23 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.common.util.FutureUtil;
+import org.apache.shindig.common.util.ImmediateFuture;
 import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.protocol.HandlerPreconditions;
 import org.apache.shindig.protocol.Operation;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RequestItem;
+import org.apache.shindig.protocol.RestfulCollection;
 import org.apache.shindig.protocol.Service;
 import org.apache.shindig.social.opensocial.service.SocialRequestItem;
 import org.apache.shindig.social.opensocial.spi.CollectionOptions;
 import org.apache.shindig.social.opensocial.spi.GroupId;
 import org.apache.shindig.social.opensocial.spi.UserId;
+import org.json.JSONObject;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 import edu.ucsf.orng.shindig.spi.RdfService;
@@ -46,6 +49,7 @@ import edu.ucsf.orng.shindig.spi.RdfService;
  */
 @Service(name = "rdf", path = "/{userId}+/{groupId}/{personId}+")
 public class RdfHandler {
+
 	private final RdfService rdfService;
 	private final ContainerConfig config;
 
@@ -80,9 +84,9 @@ public class RdfHandler {
 		CollectionOptions options = new CollectionOptions(request);
 
 		if (uris.size() == 1) {
-			return rdfService.getItem(uris.iterator().next(), output);
+			return getItem(uris.iterator().next(), output);
 		} else {
-			return rdfService.getItems(uris, output, groupId, options,
+			return getItems(uris, output, groupId, options,
 					request.getToken());
 		}
 	}
@@ -105,6 +109,66 @@ public class RdfHandler {
 			}
 		}
 		return urls;
+	}
+	
+	/**
+	 * Returns a list of people that correspond to the passed in person ids.
+	 * 
+	 * @param userIds
+	 *            A set of users
+	 * @param groupId
+	 *            The group
+	 * @param collectionOptions
+	 *            How to filter, sort and paginate the collection being fetched
+	 * @param fields
+	 *            The profile details to fetch. Empty set implies all
+	 * @param token
+	 *            The gadget token @return a list of people.
+	 * @return Future that returns a RestfulCollection of Person
+	 */
+	private Future<RestfulCollection<JSONObject>> getItems(Set<String> uris,
+			String output, GroupId groupId,
+			CollectionOptions collectionOptions, SecurityToken token)
+			throws ProtocolException {
+		// TODO Auto-generated method stub
+		List<JSONObject> result = Lists.newArrayList();
+
+		if (uris.size() == 0) {
+			return ImmediateFuture.newInstance(null);
+		}
+		for (String uri : uris) {
+			try {
+				result.add(rdfService.getRDF(uri, output));
+			} catch (Exception e) {
+				throw new ProtocolException(0, e.getMessage(), e);
+			}
+		}
+		int firstResult = 0;
+		if (collectionOptions != null) {
+			firstResult = collectionOptions.getFirst();
+		}
+		return ImmediateFuture.newInstance(new RestfulCollection<JSONObject>(
+				result, firstResult, result.size()));
+	}
+
+	/**
+	 * Returns a JSON object that corresponds to the passed in URI.
+	 * 
+	 * @param id
+	 *            The id of the person to fetch.
+	 * @param fields
+	 *            The fields to fetch.
+	 * @param token
+	 *            The gadget token
+	 * @return a list of people.
+	 */
+	private Future<JSONObject> getItem(String uri, String output)
+			throws ProtocolException {
+		try {
+			return ImmediateFuture.newInstance(rdfService.getRDF(uri, output));
+		} catch (Exception e) {
+			throw new ProtocolException(0, e.getMessage(), e);
+		}
 	}
 
 }

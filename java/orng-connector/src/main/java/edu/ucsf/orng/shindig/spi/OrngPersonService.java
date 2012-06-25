@@ -111,7 +111,7 @@ public class OrngPersonService implements PersonService {
 		if (json.has("fistName") && json.getString("firstName") != null) {				
 			name.setGivenName(json.getString("firstName"));
 		}
-		if (json.has("lastName") & json.getString("lastName") != null) {				
+		if (json.has("lastName") && json.getString("lastName") != null) {				
 			name.setFamilyName(json.getString("lastName"));
 		}
 		retVal.setName(name);

@@ -14,14 +14,27 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openrdf.sail.memory.MemoryStore;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import edu.mit.simile.babel.Babel;
 import edu.mit.simile.babel.BabelReader;
 import edu.mit.simile.babel.BabelWriter;
 import edu.mit.simile.babel.TranslatorServlet;
 
-public class RdfBabelService extends RdfService {
+public class RdfBabelService implements RdfService {
 
 	private static final Logger LOG = Logger.getLogger(RdfBabelService.class.getName());	
+	
+	private String system;
+	private String systemDomain;
+	
+	@Inject
+	public RdfBabelService(@Named("orng.system") String system, @Named("orng.systemDomain") String systemDomain) {
+		this.system = system;
+		this.systemDomain = systemDomain;
+	}
+	
 	
 	public JSONObject getRDF(String uri, String output) throws Exception {
 		BabelReader babelReader = Babel.getReader("rdf-xml"); 
@@ -30,11 +43,24 @@ public class RdfBabelService extends RdfService {
 		Properties readerProperties = new Properties();
 		Properties writerProperties = new Properties();
 
-        readerProperties.setProperty("namespace", TranslatorServlet.makeIntoNamespace(uri));
+		String url = uri;
+		// custom way to convert URI to URL in case standard LOD mechanisms will not work
+		if (systemDomain != null && url.toLowerCase().startsWith(systemDomain.toLowerCase())) {
+			if (VIVO.equalsIgnoreCase(system)) {
+				url += (url.indexOf('?') == -1 ? "?" : "&") + "format=rdfxml";
+			}
+			else if (PROFILES.equalsIgnoreCase(system)) {
+				if (!url.toLowerCase().endsWith(".rdf")) {
+					url +=  url.substring(url.lastIndexOf('/')) + ".rdf";
+				}		
+			}
+		}
+
+		readerProperties.setProperty("namespace", TranslatorServlet.makeIntoNamespace(uri));
         // trick to get rdfxml out of the URI as needed for Babel
-        readerProperties.setProperty("url", uri+"?format=rdfxml");
+        readerProperties.setProperty("url", url);
         
-		URLConnection connection = new URL(uri+"?format=rdfxml").openConnection();
+		URLConnection connection = new URL(url).openConnection();
 		connection.setConnectTimeout(5000);
 		connection.connect();
 
