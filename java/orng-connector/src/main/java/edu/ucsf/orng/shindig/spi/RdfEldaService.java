@@ -44,8 +44,23 @@ public class RdfEldaService implements RdfService {
 				}		
 			}
 		}
-        Model src = FileManager.get().loadModel(url);
-        Resource root = src.getResource(url);
+		Model src = null;
+		Resource root = null;
+		try {
+	        src = FileManager.get().loadModel(url);
+	        root = src.getResource(url);
+		}
+		catch (Exception e) {
+			if (systemDomain != null && VIVO.equalsIgnoreCase(system)) {
+				// worth a try. Handles the case where VIVO has consumed data from another instance
+				url = systemDomain + "/display?uri=" + uri + "&format=rdfxml";
+		        src = FileManager.get().loadModel(url);
+		        root = src.getResource(url);
+			}
+			else {
+				throw e;
+			}
+		}
         List<Resource> roots = new ArrayList<Resource>();
         roots.add( root );
         boolean fromRoot = src.contains(root, null, (RDFNode)null);
