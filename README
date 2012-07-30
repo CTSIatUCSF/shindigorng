@@ -38,7 +38,7 @@ Build
 	
 Install
 	Create a C:\shindig\conf directory.  
-	Copy the shindig-orng\java\orng-connector\conf\shindig.orng.properties file into the directory and edit as needed 
+	Copy the shindig-orng\java\orng-connector\conf\shindigorng.properties file into the directory and edit as needed 
 	for your environment.  
 	
 	Make sure Tomcat isn't running!
