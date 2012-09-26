@@ -150,7 +150,7 @@ public class OrngCrypterSecurityTokenCodec extends
 				.get(CONTAINER_KEY) : "default";
 
 		BlobCrypterSecurityToken st = new BlobCrypterSecurityToken(
-				crypters.get(container), container, "localhost");
+				crypters.get(container), container, domains.get(container));
 		st.setViewerId(tokenParams.get(VIEWER_KEY));
 		st.setOwnerId(tokenParams.get(OWNER_KEY));
 		st.setAppUrl(tokenParams.get(GADGET_KEY));

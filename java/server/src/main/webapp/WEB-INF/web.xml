@@ -217,6 +217,13 @@
     </servlet-class>
   </servlet>
   
+  <servlet>
+    <servlet-name>sampleSignedRequest</servlet-name>
+    <servlet-class>
+      edu.ucsf.orng.shindig.auth.SampleSignedRequestServlet
+    </servlet-class>
+  </servlet>
+  
   <servlet-mapping>
     <servlet-name>js</servlet-name>
     <url-pattern>/gadgets/js/*</url-pattern>
@@ -276,4 +283,8 @@
     <url-pattern>/oauth/*</url-pattern>
   </servlet-mapping>
   
+  <servlet-mapping>
+    <servlet-name>sampleSignedRequest</servlet-name>
+    <url-pattern>/signedRequestTest/*</url-pattern>
+  </servlet-mapping>
 </web-app>
