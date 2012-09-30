@@ -168,7 +168,8 @@ public class OrngCrypterSecurityTokenCodec extends
 		for (String param : params) {
 			String name = param.split("=")[0];
 			String value = param.split("=")[1];
-			map.put(name, OWNER_KEY.equals(name) || VIEWER_KEY.equals(name) ? URLDecoder.decode(value, "UTF-8") : value);
+			map.put(name, 
+					OWNER_KEY.equals(name) || VIEWER_KEY.equals(name) || GADGET_KEY.equals(name) ? URLDecoder.decode(value, "UTF-8") : value);
 		}
 		return map;
 	}

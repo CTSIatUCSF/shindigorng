@@ -41,7 +41,7 @@ import com.google.inject.name.Named;
 import edu.ucsf.orng.shindig.config.OrngProperties;
 
 
-public class OrngActivityService implements ActivityService, OrngProperties{
+public class OrngActivityService implements ActivityService, OrngProperties {
 
 	/**
 	 * The XML<->Bean converter
