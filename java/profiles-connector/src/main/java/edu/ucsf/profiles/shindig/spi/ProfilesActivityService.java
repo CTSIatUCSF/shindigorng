@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLXML;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -45,21 +44,24 @@ public class ProfilesActivityService implements ActivityService {
 	   * The XML<->Bean converter
 	   */
 	  private BeanConverter converter;
+	  private Common common;
 
 	  @Inject
 	  public ProfilesActivityService(@Named("shindig.bean.converter.xml")
-	  BeanConverter converter) throws Exception {
+	  BeanConverter converter, Common common) throws Exception {
 	    this.converter = converter;
+	    this.common = common;
 	  }
 	  
-	public Future<RestfulCollection<Activity>> getActivities(
+	  public Future<RestfulCollection<Activity>> getActivities(
 			Set<UserId> userIds, GroupId groupId, String appId,
 			Set<String> fields, CollectionOptions options, SecurityToken token)
 			throws ProtocolException {
+		appId = common.getAppId(appId);
 		List<Activity> result = Lists.newArrayList();
-		Connection conn = Common.getConnection();
+		Connection conn = common.getConnection();
 		try {
-			Set<String> idSet = Common.getIdSet(userIds, groupId, token);
+			Set<String> idSet = common.getIdSet(userIds, groupId, token);
 			for (String id : idSet) {
 				result.addAll(getAllActivities(conn, id, appId));
 			}
@@ -76,15 +78,23 @@ public class ProfilesActivityService implements ActivityService {
 			GroupId groupId, String appId, Set<String> fields,
 			CollectionOptions options, Set<String> activityIds,
 			SecurityToken token) throws ProtocolException {
+		appId = common.getAppId(appId);
 		List<Activity> result = Lists.newArrayList();
 		String user = userId.getUserId(token);
-		Connection conn = Common.getConnection();
-		for (String strActivityId : activityIds) {
-			try {
+		Connection conn = common.getConnection();
+		try {
+			for (String strActivityId : activityIds) {
 
 				int activityId = convertId(strActivityId);
 				getActivity(conn, user, appId, activityId);
-			} catch (SQLException se) {
+			}
+		} catch (SQLException se) {
+			throw new ProtocolException(
+					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+							.getMessage(), se);
+		}
+		finally {
+			try { conn.close(); } catch (SQLException se) {
 				throw new ProtocolException(
 						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
 								.getMessage(), se);
@@ -96,9 +106,10 @@ public class ProfilesActivityService implements ActivityService {
 	public Future<Activity> getActivity(UserId userId, GroupId groupId,
 			String appId, Set<String> fields, String activityId,
 			SecurityToken token) throws ProtocolException {
+		appId = common.getAppId(appId);
+		String user = userId.getUserId(token);
+		Connection conn = common.getConnection();
 		try {
-			String user = userId.getUserId(token);
-			Connection conn = Common.getConnection();
 			int id = convertId(activityId);
 			Activity act = getActivity(conn, user, appId, id);
 			if (act != null) {
@@ -112,19 +123,33 @@ public class ProfilesActivityService implements ActivityService {
 					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
 							.getMessage(), se);
 		}
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
 	}
 
 	public Future<Void> deleteActivities(UserId userId, GroupId groupId,
 			String appId, Set<String> activityIds, SecurityToken token)
 			throws ProtocolException {
+		appId = common.getAppId(appId);
 		String user = userId.getUserId(token);
-		Connection conn = Common.getConnection();
-		for (String strActivityId : activityIds) {
-			try {
-
+		Connection conn = common.getConnection();
+		try {
+			for (String strActivityId : activityIds) {
 				int activityId = convertId(strActivityId);
 				deleteActivity(conn, user, appId, activityId);
-			} catch (SQLException se) {
+			}
+		} catch (SQLException se) {
+			throw new ProtocolException(
+					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+							.getMessage(), se);
+		}
+		finally {
+			try { conn.close(); } catch (SQLException se) {
 				throw new ProtocolException(
 						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
 								.getMessage(), se);
@@ -136,8 +161,9 @@ public class ProfilesActivityService implements ActivityService {
 	public Future<Void> createActivity(UserId userId, GroupId groupId,
 			String appId, Set<String> fields, Activity activity,
 			SecurityToken token) throws ProtocolException {
+		appId = common.getAppId(appId);
 		String strId = userId.getUserId(token);
-		Connection conn = Common.getConnection();
+		Connection conn = common.getConnection();
 
 		// Are fields really needed here?
 		try {
@@ -153,6 +179,13 @@ public class ProfilesActivityService implements ActivityService {
 			throw new ProtocolException(
 					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex
 							.getMessage(), ex);
+		}
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
 		}
 	}
 
@@ -238,14 +271,4 @@ public class ProfilesActivityService implements ActivityService {
 		ps.execute();
 	}
 
-	public static void init() {
-		try {
-		    Connection conn = Common.getConnection(true);
-			Statement statement = conn.createStatement();
-			statement
-					.execute("CREATE TABLE shindig_activity(userId INT, appId INT, activityId INT GENERATED BY DEFAULT as identity, activity XML)");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
 }

@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -22,6 +21,7 @@ import org.apache.shindig.social.opensocial.spi.MessageService;
 import org.apache.shindig.social.opensocial.spi.UserId;
 
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 
 import edu.ucsf.profiles.shindig.model.ProfilesMessage;
 import edu.ucsf.profiles.shindig.model.ProfilesMessageCollection;
@@ -31,6 +31,12 @@ import edu.ucsf.profiles.shindig.model.ProfilesMessageCollection;
  */
 public class ProfilesMessageService implements MessageService {
 
+	  private Common common;
+
+	  @Inject
+	  public ProfilesMessageService(Common common) {
+		  this.common = common;
+	  }
     /**
      * Post a message for a set of users.
      * 
@@ -44,7 +50,8 @@ public class ProfilesMessageService implements MessageService {
      */
     public Future<Void> createMessage(UserId userId, String appId, String msgCollId, Message message,
             SecurityToken token) throws ProtocolException {
-        Connection conn = Common.getConnection();
+    	appId = common.getAppId(appId);
+        Connection conn = common.getConnection();
         String from = userId.getUserId(token);
         try {
             for (String recipient : message.getRecipients()) {
@@ -53,19 +60,33 @@ public class ProfilesMessageService implements MessageService {
         } catch (SQLException se) {
             throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se.getMessage(), se);
         }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
 
         return ImmediateFuture.newInstance(null);
     }
 
     public Future<RestfulCollection<MessageCollection>> getMessageCollections(UserId userId, Set<String> fields,
             CollectionOptions options, SecurityToken token) throws ProtocolException {
-        Connection conn = Common.getConnection();
+        Connection conn = common.getConnection();
         try {
             List<MessageCollection> result = getMessageCollections(conn, userId.getUserId(token));
             return ImmediateFuture.newInstance(new RestfulCollection<MessageCollection>(result));
         } catch (SQLException se) {
             throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se.getMessage(), se);
         }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
     }
 
     public Future<Void> deleteMessages(UserId userId, String msgCollId, List<String> ids, SecurityToken token)
@@ -78,13 +99,20 @@ public class ProfilesMessageService implements MessageService {
      */
     public Future<RestfulCollection<Message>> getMessages(UserId userId, String msgCollId, Set<String> fields,
             List<String> msgIds, CollectionOptions options, SecurityToken token) throws ProtocolException {
-        Connection conn = Common.getConnection();
+        Connection conn = common.getConnection();
         try {
             List<Message> result = getMessages(conn, userId.getUserId(token), msgCollId, msgIds);
             return ImmediateFuture.newInstance(new RestfulCollection<Message>(result));
         } catch (SQLException se) {
             throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se.getMessage(), se);
         }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
     }
 
     public Future<MessageCollection> createMessageCollection(UserId userId, MessageCollection msgCollection,
@@ -185,13 +213,4 @@ public class ProfilesMessageService implements MessageService {
         return retVal;
     }
 
-    public static void init() {
-        try {
-            Connection conn = Common.getConnection(true);
-            Statement statement = conn.createStatement();
-            statement.execute("CREATE TABLE shindig_messages(msgId varchar(255),senderId varchar(255),recipientId varchar(255),coll varchar(255),title varchar(4095),body varchar(4095))");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 }

@@ -36,12 +36,6 @@ public class ProfilesModule extends PropertiesModule {//SocialApiGuiceModule {
 		bind(String.class).annotatedWith(Names.named("shindig.canonical.json.db"))
 	        .toInstance("sampledata/canonicaldb.json");
 
-	    try {
-			new Common();
-		} catch (ClassNotFoundException e) {
-			//ignore
-		}
-		requestStaticInjection(Common.class);
 	    bind(ActivityService.class).to(ProfilesActivityService.class);
 	    bind(AppDataService.class).to(ProfilesAppDataService.class);
 		bind(PersonService.class).to(ProfilesPersonService.class);

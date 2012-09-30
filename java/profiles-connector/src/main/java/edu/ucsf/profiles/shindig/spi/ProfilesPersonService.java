@@ -6,17 +6,11 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,12 +28,10 @@ import org.apache.shindig.common.util.ImmediateFuture;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RestfulCollection;
 import org.apache.shindig.social.core.model.ListFieldImpl;
-import org.apache.shindig.social.core.model.UrlImpl;
 import org.apache.shindig.social.opensocial.model.ListField;
 import org.apache.shindig.social.opensocial.model.Name;
 import org.apache.shindig.social.opensocial.model.Organization;
 import org.apache.shindig.social.opensocial.model.Person;
-import org.apache.shindig.social.opensocial.model.Url;
 import org.apache.shindig.social.opensocial.spi.CollectionOptions;
 import org.apache.shindig.social.opensocial.spi.GroupId;
 import org.apache.shindig.social.opensocial.spi.PersonService;
@@ -65,13 +57,11 @@ import edu.ucsf.profiles.shindig.model.ProfilesPerson;
  */
 public class ProfilesPersonService implements PersonService {
 	private String endPoint;
-	private boolean rdf;
 
 	@Inject
-	public ProfilesPersonService(@Named("ProfilesEndpoint") String endpoint, @Named("profiles.RDF")String rdf)
+	public ProfilesPersonService(@Named("ProfilesEndpoint") String endpoint)
 			throws Exception {
 		this.endPoint = endpoint;
-		this.rdf = "TRUE".equalsIgnoreCase(rdf);
 	}
 
 	public Future<RestfulCollection<Person>> getPeople(Set<UserId> userIds,
@@ -321,39 +311,9 @@ public class ProfilesPersonService implements PersonService {
 			 */
 		}
 		
-		// see if RDF feature is on
-		if (rdf) {
-			try {
-				Connection conn = Common.getConnection();
-				Url url = getRDFUrl(conn, retVal.getId());
-				if (url != null) {
-					List<Url> urls = new ArrayList<Url>();
-					urls.add( url );
-					retVal.setUrls(urls);		
-				}
-				conn.close();
-	        } catch (SQLException je) {
-	            throw new ProtocolException(
-	                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, je
-	                            .getMessage(), je);
-	        }
-		}
 		return retVal;
 	}
 
-	private Url getRDFUrl(Connection conn, String id)
-			throws SQLException {
-		PreparedStatement ps = conn
-				.prepareStatement("select url from RDF where personId=?");
-		ps.setString(1, id);
-		ResultSet rs = ps.executeQuery();
-		if (rs.next()) {
-			return new UrlImpl(rs.getString("url"), "RDF", "RDF");
-		}
-		return null;
-	}
-
-	
 	private Organization parseOrg(Node curNode) {
 		Organization retVal = new ProfilesOrganization();
 		NodeList list = curNode.getChildNodes();
@@ -376,18 +336,4 @@ public class ProfilesPersonService implements PersonService {
 		return retVal;
 	}
 
-	public static void main(String args[]) {
-		try {
-			ProfilesPersonService test = new ProfilesPersonService(
-					"http://connects.catalyst.harvard.edu/ProfilesAPI/ProfileService.svc/ProfileSearch", "true");
-			UserId user = new UserId(UserId.Type.userId, "ISK1");
-			// test.getPerson(user, null, null);
-			Set<UserId> users = new HashSet<UserId>();
-			users.add(user);
-			GroupId group = new GroupId(GroupId.Type.groupId, "CoAuthorList");
-			test.getPeople(users, group, null, null, null);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 }

@@ -94,10 +94,6 @@
       <resource>
         <directory>conf</directory>
       </resource>
-      <resource>
-        <targetPath>templates</targetPath>
-        <directory>${basedir}/../../../babel/engine/src/main/webapp/WEB-INF/templates</directory>
-      </resource>
     </resources>
   </build>
 
