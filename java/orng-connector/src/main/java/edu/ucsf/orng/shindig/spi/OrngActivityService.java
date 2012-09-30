@@ -48,24 +48,27 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 	 */
 	private BeanConverter converter;
 	private String table;
+	private OrngDBUtil dbUtil;
 
 	@Inject
 	public OrngActivityService(
 			@Named("orng.system") String system,
-			@Named("shindig.bean.converter.xml") BeanConverter converter)
+			@Named("shindig.bean.converter.xml") BeanConverter converter, OrngDBUtil dbUtil)
 			throws Exception {
 		this.converter = converter;
 		this.table = PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Activity]" : "orng_activity"; 
+		this.dbUtil = dbUtil;
 	}
 
 	public Future<RestfulCollection<Activity>> getActivities(
 			Set<UserId> userIds, GroupId groupId, String appId,
 			Set<String> fields, CollectionOptions options, SecurityToken token)
 			throws ProtocolException {
+		appId = dbUtil.getAppId(appId);
 		List<Activity> result = Lists.newArrayList();
-		Connection conn = OrngUtil.getConnection();
+		Connection conn = dbUtil.getConnection();
 		try {
-			Set<String> idSet = OrngUtil.getIdSet(userIds, groupId, token);
+			Set<String> idSet = dbUtil.getIdSet(userIds, groupId, token);
 			for (String id : idSet) {
 				result.addAll(getAllActivities(conn, id, appId));
 			}
@@ -76,25 +79,39 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
 							.getMessage(), se);
 		}
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
 	}
 
 	public Future<RestfulCollection<Activity>> getActivities(UserId userId,
 			GroupId groupId, String appId, Set<String> fields,
 			CollectionOptions options, Set<String> activityIds,
 			SecurityToken token) throws ProtocolException {
+		appId = dbUtil.getAppId(appId);
 		List<Activity> result = Lists.newArrayList();
 		String user = userId.getUserId(token);
-		Connection conn = OrngUtil.getConnection();
+		Connection conn = dbUtil.getConnection();
 		for (String strActivityId : activityIds) {
 			try {
 
 				int activityId = convertId(strActivityId);
 				getActivity(conn, user, appId, activityId);
+				conn.close();
 			} catch (SQLException se) {
 				throw new ProtocolException(
 						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
 								.getMessage(), se);
 			}
+		}
+		try { conn.close(); } catch (SQLException se) {
+			throw new ProtocolException(
+					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+							.getMessage(), se);
 		}
 		return ImmediateFuture.newInstance(new RestfulCollection<Activity>(
 				result));	}
@@ -102,11 +119,13 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 	public Future<Activity> getActivity(UserId userId, GroupId groupId,
 			String appId, Set<String> fields, String activityId,
 			SecurityToken token) throws ProtocolException {
+		appId = dbUtil.getAppId(appId);
+		Connection conn = dbUtil.getConnection();
 		try {
 			String user = userId.getUserId(token);
-			Connection conn = OrngUtil.getConnection();
 			int id = convertId(activityId);
 			Activity act = getActivity(conn, user, appId, id);
+			conn.close();
 			if (act != null) {
 				return ImmediateFuture.newInstance(act);
 			}
@@ -118,13 +137,21 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
 							.getMessage(), se);
 		}
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
 	}
 
 	public Future<Void> deleteActivities(UserId userId, GroupId groupId,
 			String appId, Set<String> activityIds, SecurityToken token)
 			throws ProtocolException {
+		appId = dbUtil.getAppId(appId);
 		String user = userId.getUserId(token);
-		Connection conn = OrngUtil.getConnection();
+		Connection conn = dbUtil.getConnection();
 		for (String strActivityId : activityIds) {
 			try {
 
@@ -136,14 +163,20 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 								.getMessage(), se);
 			}
 		}
+		try { conn.close(); } catch (SQLException se) {
+			throw new ProtocolException(
+					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+							.getMessage(), se);
+		}
 		return ImmediateFuture.newInstance(null);
 	}
 
 	public Future<Void> createActivity(UserId userId, GroupId groupId,
 			String appId, Set<String> fields, Activity activity,
 			SecurityToken token) throws ProtocolException {
+		appId = dbUtil.getAppId(appId);
 		String strId = userId.getUserId(token);
-		Connection conn = OrngUtil.getConnection();
+		Connection conn = dbUtil.getConnection();
 
 		// Are fields really needed here?
 		try {
@@ -159,6 +192,13 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 			throw new ProtocolException(
 					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex
 							.getMessage(), ex);
+		}
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
 		}
 	}
 

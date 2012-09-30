@@ -34,12 +34,14 @@ import edu.ucsf.orng.shindig.model.OrngMessageCollection;
 public class OrngMessageService implements MessageService, OrngProperties {
 
 	private String table;
+	private OrngDBUtil dbUtil;
 
 	@Inject
 	public OrngMessageService(
-			@Named("orng.system") String system)
+			@Named("orng.system") String system, OrngDBUtil dbUtil)
 			throws Exception {
 		this.table = PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Messages]" : "orng_messages"; 
+		this.dbUtil = dbUtil;
 	}
 	
 	/**
@@ -55,7 +57,8 @@ public class OrngMessageService implements MessageService, OrngProperties {
      */
     public Future<Void> createMessage(UserId userId, String appId, String msgCollId, Message message,
             SecurityToken token) throws ProtocolException {
-        Connection conn = OrngUtil.getConnection();
+		appId = dbUtil.getAppId(appId);
+        Connection conn = dbUtil.getConnection();
         String from = userId.getUserId(token);
         try {
             for (String recipient : message.getRecipients()) {
@@ -64,19 +67,33 @@ public class OrngMessageService implements MessageService, OrngProperties {
         } catch (SQLException se) {
             throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se.getMessage(), se);
         }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
 
         return ImmediateFuture.newInstance(null);
     }
 
     public Future<RestfulCollection<MessageCollection>> getMessageCollections(UserId userId, Set<String> fields,
             CollectionOptions options, SecurityToken token) throws ProtocolException {
-        Connection conn = OrngUtil.getConnection();
+        Connection conn = dbUtil.getConnection();
         try {
             List<MessageCollection> result = getMessageCollections(conn, userId.getUserId(token));
             return ImmediateFuture.newInstance(new RestfulCollection<MessageCollection>(result));
         } catch (SQLException se) {
             throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se.getMessage(), se);
         }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
     }
 
     public Future<Void> deleteMessages(UserId userId, String msgCollId, List<String> ids, SecurityToken token)
@@ -89,13 +106,20 @@ public class OrngMessageService implements MessageService, OrngProperties {
      */
     public Future<RestfulCollection<Message>> getMessages(UserId userId, String msgCollId, Set<String> fields,
             List<String> msgIds, CollectionOptions options, SecurityToken token) throws ProtocolException {
-        Connection conn = OrngUtil.getConnection();
+        Connection conn = dbUtil.getConnection();
         try {
             List<Message> result = getMessages(conn, userId.getUserId(token), msgCollId, msgIds);
             return ImmediateFuture.newInstance(new RestfulCollection<Message>(result));
         } catch (SQLException se) {
             throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se.getMessage(), se);
         }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
     }
 
     public Future<MessageCollection> createMessageCollection(UserId userId, MessageCollection msgCollection,

@@ -162,7 +162,7 @@ public class OrngCrypterSecurityTokenCodec extends
 		return token;
 	}
 
-	private static Map<String, String> getQueryMap(String query) throws UnsupportedEncodingException {
+	private Map<String, String> getQueryMap(String query) throws UnsupportedEncodingException {
 		String[] params = query.split("&");
 		Map<String, String> map = Maps.newHashMap();
 		for (String param : params) {

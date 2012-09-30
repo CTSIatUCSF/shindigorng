@@ -35,10 +35,11 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
 	private String table;
 	private String delete_sp;
 	private String upsert_sp;
+	private OrngDBUtil dbUtil;
 	
 	@Inject
 	public OrngAppDataService(
-			@Named("orng.system") String system)
+			@Named("orng.system") String system, OrngDBUtil dbUtil)
 			throws Exception {
 		if (PROFILES.equalsIgnoreCase(system)) {
 			this.table = "[ORNG.].[AppData]";
@@ -50,14 +51,16 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
 			this.delete_sp = "orng_deleteAppData";
 			this.upsert_sp = "orng_upsertAppData";
 		}
+		this.dbUtil = dbUtil;
 	}
 
 	public Future<DataCollection> getPersonData(Set<UserId> userIds, GroupId groupId,
     	      String appId, Set<String> fields, SecurityToken token) throws ProtocolException {    
-        Connection conn = OrngUtil.getConnection();
+		appId = dbUtil.getAppId(appId);
+        Connection conn = dbUtil.getConnection();
         try {
             Map<String, Map<String, String>> idToData = Maps.newHashMap();
-            Set<String> idSet = OrngUtil.getIdSet(userIds, groupId, token);
+            Set<String> idSet = dbUtil.getIdSet(userIds, groupId, token);
             for (String id : idSet) {
             	if (id == null || id.isEmpty()) {
             		break;
@@ -84,8 +87,8 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
     public Future<Void> deletePersonData(UserId userId, GroupId groupId,
             String appId, Set<String> fields, SecurityToken token)
             throws ProtocolException {
-        
-        Connection conn = OrngUtil.getConnection();
+		appId = dbUtil.getAppId(appId);        
+        Connection conn = dbUtil.getConnection();
         String id = userId.getUserId(token);
 
         try {
@@ -104,7 +107,8 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
     public Future<Void> updatePersonData(UserId userId, GroupId groupId,
             String appId, Set<String> fields, Map<String, String> values,
             SecurityToken token) throws ProtocolException {
-        Connection conn = OrngUtil.getConnection();
+		appId = dbUtil.getAppId(appId);
+        Connection conn = dbUtil.getConnection();
         String id = userId.getUserId(token);
         try {
             for (String key : values.keySet()) {

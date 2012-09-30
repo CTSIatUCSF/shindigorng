@@ -15,7 +15,7 @@ import com.google.inject.name.Names;
 
 import edu.ucsf.orng.shindig.auth.OrngCrypterSecurityTokenCodec;
 import edu.ucsf.orng.shindig.spi.OrngPersonService;
-import edu.ucsf.orng.shindig.spi.OrngUtil;
+import edu.ucsf.orng.shindig.spi.OrngDBUtil;
 import edu.ucsf.orng.shindig.spi.OrngActivityService;
 import edu.ucsf.orng.shindig.spi.OrngMessageService;
 import edu.ucsf.orng.shindig.spi.OrngAppDataService;
@@ -43,8 +43,7 @@ public class OrngPropertiesModule extends PropertiesModule implements OrngProper
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
-	    requestStaticInjection(OrngUtil.class);
-
+	    
 		String orngSystem = getProperties().getProperty("orng.system");		
 		if (!PROFILES.equalsIgnoreCase(orngSystem) && !VIVO.equalsIgnoreCase(orngSystem)) {
 			throw new RuntimeException("orng.system not set properly. Needs to be Profiles or VIVO, is :" + orngSystem);
