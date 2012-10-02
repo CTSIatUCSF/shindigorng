@@ -31,6 +31,13 @@
       "consumer_secret" : "secret",
       "key_type" : "HMAC_SYMMETRIC"
     }
+  },
+  "http://dev-profiles.ucsf.edu/ORNG/HMACSignedRequestTest.xml" : {
+    "" : {
+      "consumer_key" : "UCSF",
+      "consumer_secret" : "secretBetweenUCSFandVendor",
+      "key_type" : "HMAC_SYMMETRIC"
+    }
   }
 }
   
