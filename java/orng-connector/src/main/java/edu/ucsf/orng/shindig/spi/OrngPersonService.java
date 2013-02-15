@@ -108,7 +108,7 @@ public class OrngPersonService implements PersonService {
 			retVal.setEmails(emails);
 		}
 		Name name = new OrngName();
-		if (json.has("fistName") && json.getString("firstName") != null) {				
+		if (json.has("firstName") && json.getString("firstName") != null) {				
 			name.setGivenName(json.getString("firstName"));
 		}
 		if (json.has("lastName") && json.getString("lastName") != null) {				

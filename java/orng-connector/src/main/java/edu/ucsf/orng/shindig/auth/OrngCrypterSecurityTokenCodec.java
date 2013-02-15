@@ -13,6 +13,7 @@ import java.net.URLDecoder;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Iterator;
 import java.util.Map;
@@ -86,59 +87,42 @@ public class OrngCrypterSecurityTokenCodec extends
 
 	// Accept connections for current time. Lazy Exception thrown.
 	private void acceptConnections() throws Exception {
-		// Selector for incoming time requests
-		Selector acceptSelector = SelectorProvider.provider().openSelector();
-
 		// Create a new server socket and set to non blocking mode
 		ServerSocketChannel ssc = ServerSocketChannel.open();
-		ssc.configureBlocking(false);
-
 		// Bind the server socket to the local host and port
 
 		InetAddress lh = InetAddress.getLocalHost();
 		InetSocketAddress isa = new InetSocketAddress(lh, port);
 		ssc.socket().bind(isa);
-
-		// Register accepts on the server socket with the selector. This
-		// step tells the selector that the socket wants to be put on the
-		// ready list when accept operations occur, so allowing multiplexed
-		// non-blocking I/O to take place.
-		ssc.register(acceptSelector, SelectionKey.OP_ACCEPT);
+		ssc.configureBlocking(true);
 
 		// Here's where everything happens. The select method will
 		// return when any operations registered above have occurred, the
 		// thread has been interrupted, etc.
-		while (acceptSelector.select() > 0) {
-			// Someone is ready for I/O, get the ready keys
-			Set<SelectionKey> readyKeys = acceptSelector.selectedKeys();
-			Iterator<SelectionKey> i = readyKeys.iterator();
-
-			// Walk through the ready keys collection and process date requests.
-			while (i.hasNext()) {
-				SelectionKey sk = i.next();
-				i.remove();
-				// The key indexes into the selector so you
-				// can retrieve the socket that's ready for I/O
-				ServerSocketChannel nextReady = (ServerSocketChannel) sk
-						.channel();
-				// Accept the date request and send back the date string
-				Socket s = nextReady.accept().socket();
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						s.getInputStream()));
-				String input = in.readLine();
-
-				PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-				try {
-					String token = convert(input);
-					// Send back the security token
-					out.print(token);
-
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					out.close();
+		while (true) {
+			final Socket s = ssc.accept().socket();
+			Thread thread = new Thread(new Runnable() {
+				public void run() {
+					try {
+						BufferedReader in = new BufferedReader(new InputStreamReader(
+								s.getInputStream()));
+						PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+						String input = in.readLine();
+						while (input != null) {
+							String token = convert(input);
+							// Send back the security token
+							out.println(token);
+							input = in.readLine();
+						}
+						in.close();
+						out.close();
+					} catch (Exception e) {
+						LOG.log(Level.WARNING, "Socket Exception", e);
+						e.printStackTrace();
+					}
 				}
-			}
+			});
+			thread.run();
 		}
 	}
 

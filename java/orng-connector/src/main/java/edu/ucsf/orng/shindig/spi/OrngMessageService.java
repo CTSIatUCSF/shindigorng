@@ -40,7 +40,7 @@ public class OrngMessageService implements MessageService, OrngProperties {
 	public OrngMessageService(
 			@Named("orng.system") String system, OrngDBUtil dbUtil)
 			throws Exception {
-		this.table = PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Messages]" : "orng_messages"; 
+		this.table = PROFILES.equalsIgnoreCase(system) ? "[ORNG].[Messages]" : "orng_messages"; 
 		this.dbUtil = dbUtil;
 	}
 	

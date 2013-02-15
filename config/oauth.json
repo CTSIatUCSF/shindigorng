@@ -38,6 +38,20 @@
       "consumer_secret" : "secretBetweenUCSFandVendor",
       "key_type" : "HMAC_SYMMETRIC"
     }
+  },
+  "http://www.knodeinc.com/app/opensocial/ucsfsearch.xml" : {
+    "" : {
+      "consumer_key" : "UCSF",
+      "consumer_secret" : "UCSF123",
+      "key_type" : "HMAC_SYMMETRIC"
+    }
+  },
+  "http://www.knodeinc.com/app/opensocial/ucsfprofile.xml" : {
+    "" : {
+      "consumer_key" : "UCSF",
+      "consumer_secret" : "UCSF123",
+      "key_type" : "HMAC_SYMMETRIC"
+    }
   }
 }
   

@@ -56,7 +56,7 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 			@Named("shindig.bean.converter.xml") BeanConverter converter, OrngDBUtil dbUtil)
 			throws Exception {
 		this.converter = converter;
-		this.table = PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Activity]" : "orng_activity"; 
+		this.table = PROFILES.equalsIgnoreCase(system) ? "[ORNG].[Activity]" : "orng_activity"; 
 		this.dbUtil = dbUtil;
 	}
 

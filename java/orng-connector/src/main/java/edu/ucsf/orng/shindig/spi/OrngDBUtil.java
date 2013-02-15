@@ -21,10 +21,13 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-public class OrngDBUtil {
+import edu.ucsf.orng.shindig.config.OrngProperties;
+
+public class OrngDBUtil implements OrngProperties {
 	
 	private static final Logger LOG = Logger.getLogger(OrngDBUtil.class.getName());		
 
+	private String apps_table;
 	private String dbUrl;
 	private String dbUser;
 	private String dbPassword;
@@ -33,13 +36,15 @@ public class OrngDBUtil {
 
 	@Inject
 	public OrngDBUtil(
+			@Named("orng.system") String system,
 			@Named("orng.dbURL") String dbUrl,
 			@Named("orng.dbUser") String dbUser,
 			@Named("orng.dbPassword") String dbPassword) {
+		this.apps_table = PROFILES.equalsIgnoreCase(system) ? "[ORNG].[Apps]" : "orng_apps";
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;
-		String sql = "select appid, url from orng_apps";
+		String sql = "select appid, url from " + apps_table;
 		Connection conn = getConnection();
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
@@ -49,7 +54,7 @@ public class OrngDBUtil {
 			}
 		}
 		catch (SQLException se) {
-	        LOG.log(Level.SEVERE, "Error reading orng_apps", se);
+	        LOG.log(Level.SEVERE, "Error reading " + apps_table, se);
 		}
 		finally {
 			try { conn.close(); } catch (SQLException se) {
@@ -84,7 +89,7 @@ public class OrngDBUtil {
 			LOG.log(Level.INFO, url + " is not a number after all");
 		}
 		// check DB
-		String sql = "select appid from orng_apps where url = ?";
+		String sql = "select appid from " + apps_table + " where url = ?";
 		Connection conn = getConnection();
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
