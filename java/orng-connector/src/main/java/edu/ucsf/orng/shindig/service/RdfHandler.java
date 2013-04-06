@@ -68,8 +68,6 @@ public class RdfHandler {
 	@Operation(httpMethods = "GET")
 	public Future<?> get(SocialRequestItem request) throws ProtocolException {
 		GroupId groupId = request.getGroup();
-		Set<String> optionalPersonId = ImmutableSet.copyOf(request
-				.getListParameter("personId"));
 		Set<String> optionalURI = ImmutableSet.copyOf(request
 				.getListParameter("uri"));
 		String output = request.getParameter("output");

@@ -9,10 +9,10 @@ import org.apache.shindig.social.opensocial.service.AppDataHandler;
 import org.apache.shindig.social.opensocial.service.MediaItemHandler;
 import org.apache.shindig.social.opensocial.service.MessageHandler;
 import org.apache.shindig.social.opensocial.service.PersonHandler;
+import edu.ucsf.orng.shindig.service.RdfHandler;
+import edu.ucsf.orng.shindig.service.RegistryHandler;
 
 import com.google.common.collect.ImmutableSet;
-
-import edu.ucsf.orng.shindig.service.RdfHandler;
 
 public class OrngSocialApiGuiceModule extends SocialApiGuiceModule {
 
@@ -22,6 +22,6 @@ public class OrngSocialApiGuiceModule extends SocialApiGuiceModule {
 	   */
 	  protected Set<Class<?>> getHandlers() {
 	    return ImmutableSet.<Class<?>>of(ActivityHandler.class, AppDataHandler.class,
-	        PersonHandler.class, MessageHandler.class, AlbumHandler.class, MediaItemHandler.class, RdfHandler.class);
+	        PersonHandler.class, MessageHandler.class, AlbumHandler.class, MediaItemHandler.class, RdfHandler.class, RegistryHandler.class);
 	  }
 }

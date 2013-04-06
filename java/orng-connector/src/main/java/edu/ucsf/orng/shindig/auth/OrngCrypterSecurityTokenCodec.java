@@ -112,13 +112,13 @@ public class OrngCrypterSecurityTokenCodec extends
 							String token = convert(input);
 							// Send back the security token
 							out.println(token);
+							out.flush();
 							input = in.readLine();
 						}
 						in.close();
 						out.close();
 					} catch (Exception e) {
-						LOG.log(Level.WARNING, "Socket Exception", e);
-						e.printStackTrace();
+						LOG.log(Level.INFO, "Socket Exception", e);
 					}
 				}
 			});

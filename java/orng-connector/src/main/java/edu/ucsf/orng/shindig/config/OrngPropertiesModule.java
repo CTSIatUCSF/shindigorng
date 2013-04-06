@@ -15,12 +15,12 @@ import com.google.inject.name.Names;
 
 import edu.ucsf.orng.shindig.auth.OrngCrypterSecurityTokenCodec;
 import edu.ucsf.orng.shindig.spi.OrngPersonService;
-import edu.ucsf.orng.shindig.spi.OrngDBUtil;
 import edu.ucsf.orng.shindig.spi.OrngActivityService;
 import edu.ucsf.orng.shindig.spi.OrngMessageService;
 import edu.ucsf.orng.shindig.spi.OrngAppDataService;
 import edu.ucsf.orng.shindig.spi.RdfBabelService;
 import edu.ucsf.orng.shindig.spi.RdfEldaService;
+import edu.ucsf.orng.shindig.spi.RdfJsonLDService;
 import edu.ucsf.orng.shindig.spi.RdfService;
 
 public class OrngPropertiesModule extends PropertiesModule implements OrngProperties {//SocialApiGuiceModule {
@@ -60,6 +60,9 @@ public class OrngPropertiesModule extends PropertiesModule implements OrngProper
 	    } 
 	    else if ("elda".equalsIgnoreCase(rdfConverter)) {
 	    	bind(RdfService.class).to(RdfEldaService.class);	    	
+	    }
+	    else if ("jsonld".equalsIgnoreCase(rdfConverter)) {
+	    	bind(RdfService.class).to(RdfJsonLDService.class);	    	
 	    }
 		else {
 			throw new RuntimeException("orng.RDFConverter not set properly. Needs to be babel or elda, is :" + rdfConverter);
