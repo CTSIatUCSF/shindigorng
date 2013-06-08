@@ -6,10 +6,12 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import org.apache.shindig.auth.SecurityToken;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openrdf.sail.memory.MemoryStore;
@@ -36,7 +38,7 @@ public class RdfBabelService implements RdfService {
 	}
 	
 	
-	public JSONObject getRDF(String uri, String output) throws Exception {
+	public JSONObject getRDF(String uri, String output, String containerSessionId, SecurityToken token) throws Exception {
 		BabelReader babelReader = Babel.getReader("rdf-xml"); 
 		BabelWriter babelWriter = Babel.getWriter("exhibit-json"); 
 		Locale locale = Locale.getDefault();
@@ -53,6 +55,11 @@ public class RdfBabelService implements RdfService {
 				if (!url.toLowerCase().endsWith(".rdf")) {
 					url +=  url.substring(url.lastIndexOf('/')) + ".rdf";
 				}		
+				// add in SessionID so that we can take advantage of Profiles security settings
+				if (containerSessionId != null)
+				{
+					url += (url.indexOf('?') == -1 ? "?" : "&") + "ContainerSessionID=" + containerSessionId + "&Viewer=" + URLEncoder.encode(token.getViewerId(), "UTF-8");					
+				}
 			}
 		}
 

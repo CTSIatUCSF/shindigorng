@@ -50,12 +50,12 @@ public class OrngRegistryService implements OrngProperties {
 		this.dbUtil = dbUtil;
 	}
 
-	public Future<Map<String, Integer>> getViewerSecurity(Set<UserId> userIds, GroupId groupId,
+	public Future<Map<String, String>> getVisibility(Set<UserId> userIds, GroupId groupId,
     	      String appId, SecurityToken token) throws ProtocolException {    
 		appId = dbUtil.getAppId(token.getAppUrl());
         Connection conn = dbUtil.getConnection();
         try {
-            Map<String, Integer> idToData = Maps.newHashMap();
+            Map<String, String> idToData = Maps.newHashMap();
             Set<String> idSet = dbUtil.getIdSet(userIds, groupId, token);
             for (String id : idSet) {
             	if (id == null || id.isEmpty()) {
@@ -63,7 +63,7 @@ public class OrngRegistryService implements OrngProperties {
             	}
             	LOG.log(Level.INFO, "getRegistry " +id + " "
                          + groupId.getType() + " " + appId);
-            	idToData.put(id, getViewerSecurity(conn, id, appId));
+            	idToData.put(id, getVisibility(conn, id, appId));
             }
 			conn.close();
             return ImmediateFuture.newInstance(idToData);
@@ -74,13 +74,13 @@ public class OrngRegistryService implements OrngProperties {
         }
     }
 
-    public Future<Void> setViewerSecurity(UserId userId, GroupId groupId,
-            String appId, SecurityToken token, int securityGroup) throws ProtocolException {
+    public Future<Void> setVisibility(UserId userId, GroupId groupId,
+            String appId, SecurityToken token, String visibility) throws ProtocolException {
 		appId = dbUtil.getAppId(token.getAppUrl());
         Connection conn = dbUtil.getConnection();
         String id = userId.getUserId(token);
         try {
-            setViewerSecurity(conn, id, appId, securityGroup);
+        	setVisibility(conn, id, appId, visibility);
 			conn.close();
             return ImmediateFuture.newInstance(null);
         } catch (SQLException se) {
@@ -90,26 +90,26 @@ public class OrngRegistryService implements OrngProperties {
         }
     }
 
-    private int getViewerSecurity(Connection conn, String id, String appId)
+    private String getVisibility(Connection conn, String id, String appId)
             throws SQLException {
         PreparedStatement ps = conn
-                .prepareStatement("select viewerSecurity from " + table + " where appId=? AND personId = ?");
+                .prepareStatement("select visibility from " + table + " where appId=? AND uri = ?");
         ps.setString(1, appId);
         ps.setString(2, id);
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
-            return rs.getInt(1);
+            return rs.getString(1);
         }
-        return 0;
+        return null;
     }
 
-    private void setViewerSecurity(Connection conn, String id, String appId, int viewerSecurity)
+    private void setVisibility(Connection conn, String id, String appId, String visibility)
             throws SQLException {
         CallableStatement cs = conn
 		        .prepareCall("{ call " + upsert_sp + "(?, ?, ?)}");
 		cs.setString(1, id);
 		cs.setInt(2, Integer.parseInt(appId));
-		cs.setInt(3, viewerSecurity);
+		cs.setString(3, visibility);
         cs.execute();
     }
 

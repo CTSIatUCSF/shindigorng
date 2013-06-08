@@ -214,7 +214,7 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 
 
 	private List<Activity> getAllActivities(Connection conn, String id, String appId) throws SQLException {
-		String sql = "select activity from " + table + " where userId = ?" + (appId != null ? " AND appId=" + appId: "");
+		String sql = "select activity from " + table + " where uri = ?" + (appId != null ? " AND appId=" + appId: "");
 		PreparedStatement ps = conn.prepareStatement(sql);
 		ps.setString(1, id);		
 		ResultSet rs = ps.executeQuery();
@@ -227,7 +227,7 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 
 	private Activity getActivity(Connection conn, String id, String appId,
 			int activityId) throws SQLException {
-		String sql = "select activity from " + table + " where userId = ? AND activityId = ?" + (appId != null ? " AND appId=" + appId: "");
+		String sql = "select activity from " + table + " where uri = ? AND activityId = ?" + (appId != null ? " AND appId=" + appId: "");
 		PreparedStatement ps = conn.prepareStatement(sql);
 		ps.setString(1, id);
 		ps.setInt(2, activityId);
@@ -241,7 +241,7 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 	private void deleteActivity(Connection conn, String id, String appId,
 			int activityId) throws SQLException {
 		PreparedStatement ps = conn
-				.prepareStatement("delete from " + table + " where appId=? AND userId = ? AND activityId = ?");
+				.prepareStatement("delete from " + table + " where appId=? AND uri = ? AND activityId = ?");
 		ps.setString(1, appId);
 		ps.setString(2, id);
 		ps.setInt(3, activityId);
@@ -271,7 +271,7 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 		// To TEST that we can rebuild object
         //Activity foo = converter.convertToObject(baos.toString(), Activity.class);
 		
-		String sql = "insert into " + table + " (appId, userId, activity" + (
+		String sql = "insert into " + table + " (appId, uri, activity" + (
 				activityId > 0 ? ", activityId) VALUES (?,?,?,?)" : ") VALUES (?,?,?)");
 		PreparedStatement ps = conn
 				.prepareStatement(sql);

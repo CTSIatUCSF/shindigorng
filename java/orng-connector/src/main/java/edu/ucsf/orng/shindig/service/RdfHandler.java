@@ -71,6 +71,7 @@ public class RdfHandler {
 		Set<String> optionalURI = ImmutableSet.copyOf(request
 				.getListParameter("uri"));
 		String output = request.getParameter("output");
+		String containerSessionId = request.getParameter("containerSessionId");
 
 		Set<String> uris = new HashSet<String>();
 		uris.addAll(makeIdsIntoURIs(request.getUsers(), request.getToken()));
@@ -82,9 +83,9 @@ public class RdfHandler {
 		CollectionOptions options = new CollectionOptions(request);
 
 		if (uris.size() == 1) {
-			return getItem(uris.iterator().next(), output);
+			return getItem(uris.iterator().next(), output, containerSessionId, request.getToken());
 		} else {
-			return getItems(uris, output, groupId, options,
+			return getItems(uris, output, containerSessionId, groupId, options, 
 					request.getToken());
 		}
 	}
@@ -125,7 +126,7 @@ public class RdfHandler {
 	 * @return Future that returns a RestfulCollection of Person
 	 */
 	private Future<RestfulCollection<JSONObject>> getItems(Set<String> uris,
-			String output, GroupId groupId,
+			String output, String containerSessionId, GroupId groupId,
 			CollectionOptions collectionOptions, SecurityToken token)
 			throws ProtocolException {
 		// TODO Auto-generated method stub
@@ -136,7 +137,7 @@ public class RdfHandler {
 		}
 		for (String uri : uris) {
 			try {
-				result.add(rdfService.getRDF(uri, output));
+				result.add(rdfService.getRDF(uri, output, containerSessionId, token));
 			} catch (Exception e) {
 				throw new ProtocolException(0, e.getMessage(), e);
 			}
@@ -160,10 +161,10 @@ public class RdfHandler {
 	 *            The gadget token
 	 * @return a list of people.
 	 */
-	private Future<JSONObject> getItem(String uri, String output)
+	private Future<JSONObject> getItem(String uri, String output, String containerSessionId, SecurityToken token)
 			throws ProtocolException {
 		try {
-			return ImmediateFuture.newInstance(rdfService.getRDF(uri, output));
+			return ImmediateFuture.newInstance(rdfService.getRDF(uri, output, containerSessionId, token));
 		} catch (Exception e) {
 			throw new ProtocolException(0, e.getMessage(), e);
 		}

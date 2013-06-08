@@ -1,9 +1,11 @@
 package edu.ucsf.orng.shindig.spi;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.apache.shindig.auth.SecurityToken;
 import org.json.JSONObject;
 
 import com.google.inject.Inject;
@@ -30,7 +32,7 @@ public class RdfJsonLDService implements RdfService {
 		this.systemDomain = systemDomain;
 	}
 	
-	public JSONObject getRDF(String uri, String output) throws Exception {
+	public JSONObject getRDF(String uri, String output, String containerSessionId, SecurityToken token) throws Exception {
 		
 		String url = uri;
 		// custom way to convert URI to URL in case standard LOD mechanisms will not work
@@ -42,6 +44,11 @@ public class RdfJsonLDService implements RdfService {
 				if (!url.toLowerCase().endsWith(".rdf")) {
 					url +=  url.substring(url.lastIndexOf('/')) + ".rdf";
 				}		
+				// add in SessionID so that we can take advantage of Profiles security settings
+				if (containerSessionId != null)
+				{
+					url += (url.indexOf('?') == -1 ? "?" : "&") + "ContainerSessionID=" + containerSessionId + "&Viewer=" + URLEncoder.encode(token.getViewerId(), "UTF-8");					
+				}
 			}
 		}
 		Model src = null;

@@ -42,6 +42,7 @@ gadgets.util.registerOnLoadHandler(function() {
     osapi.rdf.getViewer = function(options) {
       options = options || {};
       options.output = options.output || "minimal";
+      options.containerSessionId = parent.my.containerSessionId; 
       options.userId = '@viewer';
       options.groupId = '@self';
       return osapi.rdf.get(options);
@@ -57,6 +58,7 @@ gadgets.util.registerOnLoadHandler(function() {
     osapi.rdf.getViewerFriends = function(options) {
       options = options || {};
       options.output = options.output || "minimal";
+      options.containerSessionId = parent.my.containerSessionId; 
       options.userId = '@viewer';
       options.groupId = '@friends';
       return osapi.rdf.get(options);
@@ -72,6 +74,7 @@ gadgets.util.registerOnLoadHandler(function() {
     osapi.rdf.getOwner = function(options) {
       options = options || {};
       options.output = options.output || "minimal";
+      options.containerSessionId = parent.my.containerSessionId; 
       options.userId = '@owner';
       options.groupId = '@self';
       return osapi.rdf.get(options);
@@ -87,6 +90,7 @@ gadgets.util.registerOnLoadHandler(function() {
     osapi.rdf.getOwnerFriends = function(options) {
       options = options || {};
       options.output = options.output || "minimal";
+      options.containerSessionId = parent.my.containerSessionId; 
       options.userId = '@owner';
       options.groupId = '@friends';
       return osapi.rdf.get(options);
@@ -99,6 +103,10 @@ gadgets.util.registerOnLoadHandler(function() {
     osapi.rdf.getRDF = function(uri, options) {
         var options = options || {};
         options.output = options.output || "minimal";
+        // for security reasons only send sessionId if going back to host!
+        if (uri.indexOf(parent.location.hostname) !== -1) { 
+        	options.containerSessionId = parent.my.containerSessionId;
+        }
         options.userId = '@userId';
         options.groupId = '@self';
         options.uri = uri;

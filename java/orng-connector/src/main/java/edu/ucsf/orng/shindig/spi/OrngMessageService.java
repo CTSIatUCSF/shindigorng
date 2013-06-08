@@ -177,9 +177,9 @@ public class OrngMessageService implements MessageService, OrngProperties {
             pm.setCollectionIds(colls);
             pm.setBody(rs.getString("body"));
             pm.setTitle(rs.getString("title"));
-            pm.setSenderId(rs.getString("senderId"));
+            pm.setSenderId(rs.getString("senderUri"));
             List<String> recipients = Lists.newArrayList();
-            colls.add(rs.getString("recipient"));
+            colls.add(rs.getString("recipientUri"));
             pm.setRecipients(recipients);
             retVal.add(pm);
         }
@@ -190,7 +190,7 @@ public class OrngMessageService implements MessageService, OrngProperties {
 
     private void addMessage(Connection conn, String from, String to, String coll, Message msg)
             throws SQLException {
-        String sql = "insert into " + table + " (msgId, coll, title, body, senderId, recipientId) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "insert into " + table + " (msgId, coll, title, body, senderUri, recipientUri) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = conn.prepareCall(sql);
         ps.setString(0, msg.getId());
         ps.setString(1, coll);
@@ -204,7 +204,7 @@ public class OrngMessageService implements MessageService, OrngProperties {
     private List<MessageCollection> getMessageCollections(Connection conn, String user)
             throws SQLException {
         List<MessageCollection> retVal = Lists.newArrayList();
-        String sql = "select distinct(coll) from " + table + " where recipient = ? ";
+        String sql = "select distinct(coll) from " + table + " where recipientUri = ? ";
         
         PreparedStatement ps = conn.prepareCall(sql);
         int index = 0;

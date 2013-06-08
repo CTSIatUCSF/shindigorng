@@ -67,12 +67,12 @@ public class OrngPersonService implements PersonService {
 	public Future<Person> getPerson(UserId id, Set<String> fields,
 			SecurityToken token) throws ProtocolException {
 		String strId = id.getUserId(token);
-		LOG.log(Level.INFO, "getPerson id=" + strId);
+		LOG.log(Level.INFO, "getPerson uri=" + strId);
 		
 		try {
 			// There can be only one!
 			if (strId != null) {
-				JSONObject personJSON =  rdfService.getRDF(strId, RdfService.MINIMAL);;
+				JSONObject personJSON =  rdfService.getRDF(strId, RdfService.MINIMAL, null, token);
 				Person personObj = parsePerson(strId, personJSON);
 				return ImmediateFuture.newInstance(personObj);
 			}

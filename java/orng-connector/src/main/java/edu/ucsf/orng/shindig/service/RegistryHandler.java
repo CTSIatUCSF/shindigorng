@@ -56,7 +56,7 @@ public class RegistryHandler {
 	   * values and set on the person object. If there are no fields vars then all of the data will be
 	   * overridden.
 	   */
-	  @Operation(httpMethods = "PUT", bodyParam = "securityGroup")
+	  @Operation(httpMethods = "PUT", bodyParam = "visibility")
 	  public Future<?> update(SocialRequestItem request) throws ProtocolException {
 	    return create(request);
 	  }
@@ -69,15 +69,15 @@ public class RegistryHandler {
 	   * The post data should be a regular json object. All of the fields vars will be pulled from the
 	   * values and set. If there are no fields vars then all of the data will be overridden.
 	   */
-	  @Operation(httpMethods = "POST", bodyParam = "viewerSecurity")
+	  @Operation(httpMethods = "POST", bodyParam = "visibility")
 	  public Future<?> create(SocialRequestItem request) throws ProtocolException {
 	    Set<UserId> userIds = request.getUsers();
 
 	    HandlerPreconditions.requireNotEmpty(userIds, "No userId specified");
 	    HandlerPreconditions.requireSingular(userIds, "Multiple userIds not supported");
 
-	    return service.setViewerSecurity(userIds.iterator().next(), request.getGroup(),
-	        request.getAppId(), request.getToken(), Integer.valueOf(request.getParameter("viewerSecurity")));
+	    return service.setVisibility(userIds.iterator().next(), request.getGroup(),
+	        request.getAppId(), request.getToken(), request.getParameter("visibility"));
 	  }
 
 	/**
@@ -89,7 +89,7 @@ public class RegistryHandler {
 	@Operation(httpMethods = "GET")
 	public Future<?> get(SocialRequestItem request) throws ProtocolException {
 		GroupId groupId = request.getGroup();
-		return service.getViewerSecurity(request.getUsers(), groupId, request.getAppId(), request.getToken());
+		return service.getVisibility(request.getUsers(), groupId, request.getAppId(), request.getToken());
 	}
 
 }

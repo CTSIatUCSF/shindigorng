@@ -127,7 +127,7 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
     private String getData(Connection conn, String id, String appId, String key)
             throws SQLException {
         PreparedStatement ps = conn
-                .prepareStatement("select value from " + table + " where appId=? AND userId = ? AND keyName = ?");
+                .prepareStatement("select value from " + table + " where appId=? AND uri = ? AND keyName = ?");
         ps.setString(1, appId);
         ps.setString(2, id);
         ps.setString(3, key);
