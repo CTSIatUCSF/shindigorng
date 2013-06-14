@@ -91,7 +91,7 @@
 // Uncomment these to switch to a secure version
 //
 "gadgets.securityTokenType" : "secure",
-//With shindigorng this is specified in shindig.orng.properties!!!!
+//With shindigorng this is specified in shindigorng.properties!!!!
 //"gadgets.securityTokenKeyFile" : "/shindig/openssl/securitytokenkey.txt",
 //This next value is a decent one to use, but people wanting to seriously use OAuth may want
 //to configure in their own value.
@@ -101,7 +101,7 @@
 "defaultShindigTestHost": "http://${SERVER_HOST}:${SERVER_PORT}",
 
 // Authority (host:port without scheme) for the proxy and concat servlets.
-"defaultShindigProxyConcatAuthority": "${SERVER_HOST}:${SERVER_PORT}",
+"defaultShindigProxyConcatAuthority": "${SERVER_HOST}",
 
 // Default Uri config: these must be overridden - specified here for testing purposes
 "gadgets.uri.iframe.unlockedDomain": "${Cur['defaultShindigTestHost']}",
