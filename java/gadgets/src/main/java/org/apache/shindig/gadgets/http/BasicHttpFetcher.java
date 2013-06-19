@@ -88,6 +88,7 @@ import java.util.zip.InflaterInputStream;
 
 // Temporary replacement of javax.annotation.Nullable
 import org.apache.shindig.common.Nullable;
+
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -166,8 +167,38 @@ public class BasicHttpFetcher implements HttpFetcher {
     // Create and initialize scheme registry
     SchemeRegistry schemeRegistry = new SchemeRegistry();
     schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-    schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+    // UCSF. Change to allow self signed registered certs
+    /**
+    try {
+        SSLContext sslContext = SSLContext.getInstance("SSL");
+        // set up a TrustManager that trusts everything
+        sslContext.init(null, new TrustManager[] { new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {
+                            System.out.println("getAcceptedIssuers =============");
+                            return null;
+                    }
 
+                    public void checkClientTrusted(X509Certificate[] certs,
+                                    String authType) {
+                            System.out.println("checkClientTrusted =============");
+                    }
+
+                    public void checkServerTrusted(X509Certificate[] certs,
+                                    String authType) {
+                            System.out.println("checkServerTrusted =============");
+                    }
+        } }, new SecureRandom());
+        SSLSocketFactory sf = new SSLSocketFactory(sslContext);
+        sf.setHostnameVerifier((X509HostnameVerifier)org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        schemeRegistry.register(new Scheme("https", sf, 443));
+    }
+    catch (Exception e)
+    {
+    	throw new RuntimeException(e);
+    } */
+    schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+    // end UCSF    
+    
     ClientConnectionManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
     DefaultHttpClient client = new DefaultHttpClient(cm, params);
 

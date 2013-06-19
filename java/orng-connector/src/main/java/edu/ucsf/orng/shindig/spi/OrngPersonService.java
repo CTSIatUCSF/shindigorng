@@ -102,7 +102,12 @@ public class OrngPersonService implements PersonService {
 		if (json.has("label") && json.getString("label") != null) {
 			retVal.setDisplayName(json.getString("label"));
 		}
-		if (json.has("primaryEmail") && json.getString("primaryEmail") != null) {
+		if (json.has("email") && json.getString("email") != null) {
+			List<ListField> emails = new ArrayList<ListField>();
+			emails.add( new ListFieldImpl(null, json.getString("email")) );
+			retVal.setEmails(emails);
+		}
+		else if (json.has("primaryEmail") && json.getString("primaryEmail") != null) {
 			List<ListField> emails = new ArrayList<ListField>();
 			emails.add( new ListFieldImpl(null, json.getString("primaryEmail")) );
 			retVal.setEmails(emails);

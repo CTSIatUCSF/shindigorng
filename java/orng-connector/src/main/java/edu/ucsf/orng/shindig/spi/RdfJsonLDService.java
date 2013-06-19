@@ -41,14 +41,19 @@ public class RdfJsonLDService implements RdfService {
 				url += (url.indexOf('?') == -1 ? "?" : "&") + "format=rdfxml";
 			}
 			else if (PROFILES.equalsIgnoreCase(system)) {
-				if (!url.toLowerCase().endsWith(".rdf")) {
-					url +=  url.substring(url.lastIndexOf('/')) + ".rdf";
+				// we know how to parse out the URL with profiles to take advantage of a direct request
+				// where we can avoid the redirect and add helpful query args
+				if (!url.toLowerCase().endsWith(".rdf") && url.indexOf('?') == -1) {
+					url = systemDomain + "/Profile/Profile.aspx?Subject=" + url.substring(url.lastIndexOf('/') + 1);
+					// add in SessionID so that we can take advantage of Profiles security settings
+					if ("full".equalsIgnoreCase(output)) {
+						url += "&Expand=true&ShowDetails=true";
+					}
+					if (containerSessionId != null)
+					{
+						url += "&ContainerSessionID=" + containerSessionId + "&Viewer=" + URLEncoder.encode(token.getViewerId(), "UTF-8");					
+					}
 				}		
-				// add in SessionID so that we can take advantage of Profiles security settings
-				if (containerSessionId != null)
-				{
-					url += (url.indexOf('?') == -1 ? "?" : "&") + "ContainerSessionID=" + containerSessionId + "&Viewer=" + URLEncoder.encode(token.getViewerId(), "UTF-8");					
-				}
 			}
 		}
 		Model src = null;

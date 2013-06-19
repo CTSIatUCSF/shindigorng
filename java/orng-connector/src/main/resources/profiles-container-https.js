@@ -75,7 +75,7 @@
 // jsUriTemplate will have %host% and %js% substituted.
 // No locked domain special cases, but jsUriTemplate must
 // never conflict with a lockedDomainSuffix.
-"gadgets.jsUriTemplate" : "http://%host%/shindigorng/gadgets/js/%js%",
+"gadgets.jsUriTemplate" : "https://%host%/shindigorng/gadgets/js/%js%",
 	
 // Callback URL.  Scheme relative URL for easy switch between https/http.
 "gadgets.uri.oauth.callbackTemplate" : "//%host%/shindigorng/gadgets/oauthcallback",
@@ -86,7 +86,7 @@
 // Config param to load Opensocial data for social
 // preloads in data pipelining.  %host% will be
 // substituted with the current host.
-"gadgets.osDataUri" : "http://%host%/shindigorng/rpc",
+"gadgets.osDataUri" : "https://%host%/shindigorng/rpc",
 
 // Uncomment these to switch to a secure version
 //
@@ -98,7 +98,7 @@
 "gadgets.signedFetchDomain" : "${SERVER_HOST}",
 
 // URI for the default shindig test instance.
-"defaultShindigTestHost": "http://${SERVER_HOST}:${SERVER_PORT}",
+"defaultShindigTestHost": "https://${SERVER_HOST}:${SERVER_PORT}",
 
 // Authority (host:port without scheme) for the proxy and concat servlets.
 "defaultShindigProxyConcatAuthority": "${SERVER_HOST}:${SERVER_PORT}",
@@ -242,9 +242,9 @@
   "opensocial" : {
     // Path to fetch opensocial data from
     // Must be on the same domain as the gadget rendering server
-    "path" : "http://%host%/shindigorng/rpc",
+    "path" : "https://%host%/shindigorng/rpc",
     // Path to issue invalidate calls
-    "invalidatePath" : "http://%host%/shindigorng/rpc",
+    "invalidatePath" : "https://%host%/shindigorng/rpc",
     "domain" : "shindig",
     "enableCaja" : false,
     "supportedOntologies" : ["vivo-core-public-1.4"],
@@ -261,11 +261,20 @@
     // introspected. Simply list out the available servies and omit "container.listMethods" to
     // avoid the initialization delay caused by gadgets.rpc
     // E.g. "gadgets.rpc" : ["activities.requestCreate", "messages.requestSend", "requestShareApp", "requestPermission"]
-    "gadgets.rpc" : ["container.listMethods"]
+	//"gadgets.rpc" : ["container.listMethods"]
+    "gadgets.rpc" : ["samplecontainer.update", "activities.supportedFields", "gadgets.metadata", "albums.supportedFields", "albums.get",
+                     "mediaItems.create", "http.put", "system.listMethods", "http.head", "messages.create", "albums.delete", "rdf.get",
+                     "mediaItems.update", "registry.create", "registry.update", "messages.delete", "appdata.update", "http.post",
+                     "gadgets.tokenSupportedFields", "samplecontainer.create", "http.get", "appdata.delete", "appdata.create", "gadgets.supportedFields",
+                     "mediaItems.get", "activities.update", "activities.delete", "albums.update", "activities.get", "messages.modify", "activitystreams.create",
+                     "messages.get", "appdata.get", "cache.invalidate", "samplecontainer.get", "people.supportedFields", "http.delete",
+                     "people.get", "activitystreams.get", "mediaItems.supportedFields", "mediaItems.delete", "activitystreams.update",
+                     "rdf.supportedOntologies", "registry.get", "activities.create", "albums.create", "gadgets.token", "activitystreams.delete",
+                     "activitystreams.supportedFields"]
   },
   "osapi" : {
     // The endpoints to query for available JSONRPC/REST services
-    "endPoints" : [ "http://%host%/shindigorng/rpc" ]
+    "endPoints" : [ "https://%host%/shindigorng/rpc" ]
   },
   "osml": {
     // OSML library resource.  Can be set to null or the empty string to disable OSML

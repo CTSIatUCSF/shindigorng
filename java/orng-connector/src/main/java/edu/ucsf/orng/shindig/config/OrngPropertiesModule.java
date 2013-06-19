@@ -5,11 +5,9 @@ import org.apache.shindig.common.PropertiesModule;
 import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
 import org.apache.shindig.social.opensocial.spi.ActivityService;
 import org.apache.shindig.social.opensocial.spi.AppDataService;
-import org.apache.shindig.social.opensocial.spi.MediaItemService;
 import org.apache.shindig.social.opensocial.spi.MessageService;
 import org.apache.shindig.social.opensocial.spi.PersonService;
 import org.apache.shindig.social.sample.oauth.SampleOAuthDataStore;
-import org.apache.shindig.social.sample.spi.JsonDbOpensocialService;
 
 import com.google.inject.name.Names;
 
@@ -18,8 +16,6 @@ import edu.ucsf.orng.shindig.spi.OrngPersonService;
 import edu.ucsf.orng.shindig.spi.OrngActivityService;
 import edu.ucsf.orng.shindig.spi.OrngMessageService;
 import edu.ucsf.orng.shindig.spi.OrngAppDataService;
-import edu.ucsf.orng.shindig.spi.RdfBabelService;
-import edu.ucsf.orng.shindig.spi.RdfEldaService;
 import edu.ucsf.orng.shindig.spi.RdfJsonLDService;
 import edu.ucsf.orng.shindig.spi.RdfService;
 
@@ -29,7 +25,9 @@ public class OrngPropertiesModule extends PropertiesModule implements OrngProper
 	
 	public OrngPropertiesModule() {
 		super(DEFAULT_PROPERTIES);
-		getProperties().setProperty("shindig.containers.default", "res://" + this.getProperties().getProperty("orng.system").toLowerCase() + "-container.js");		
+		getProperties().setProperty("shindig.containers.default", "res://" + 
+		this.getProperties().getProperty("orng.system").toLowerCase() + "-container" +
+		(this.getProperties().getProperty("orng.systemDomain").toLowerCase().startsWith("https") ? "-https.js" : ".js"));		
 	}
 
 	@Override
@@ -53,34 +51,10 @@ public class OrngPropertiesModule extends PropertiesModule implements OrngProper
 	    bind(ActivityService.class).to(OrngActivityService.class);
         bind(MessageService.class).to(OrngMessageService.class);
 	    bind(AppDataService.class).to(OrngAppDataService.class);
-	    
-		String rdfConverter = getProperties().getProperty("orng.RDFConverter");		
-	    if ("babel".equalsIgnoreCase(rdfConverter)) {
-	    	bind(RdfService.class).to(RdfBabelService.class);
-	    } 
-	    else if ("elda".equalsIgnoreCase(rdfConverter)) {
-	    	bind(RdfService.class).to(RdfEldaService.class);	    	
-	    }
-	    else if ("jsonld".equalsIgnoreCase(rdfConverter)) {
-	    	bind(RdfService.class).to(RdfJsonLDService.class);	    	
-	    }
-		else {
-			throw new RuntimeException("orng.RDFConverter not set properly. Needs to be babel or elda, is :" + rdfConverter);
-		}
+	    bind(RdfService.class).to(RdfJsonLDService.class);	    	
 		bind(PersonService.class).to(OrngPersonService.class);
 
-        // Note from Eric Meeks.  We do not use this yet
-		bind(MediaItemService.class).to(JsonDbOpensocialService.class);
         bind(OAuthDataStore.class).to(SampleOAuthDataStore.class);
-        
-        // start token service thread
-        // pass in port now because waiting for injection would be too late
-        /*
-		service = new SecureTokenGeneratorService(Integer.parseInt(getProperties().getProperty("orng.tokenservice.port")));
-		Thread thread = new Thread(service);
-		thread.setDaemon(true);
-		thread.start();
-		requestInjection(service); */
 	}
 
 }

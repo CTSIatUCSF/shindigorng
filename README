@@ -21,13 +21,8 @@ Build
 	
 	Go to ..\orng-connector\jars\ and type the following commands:
 		>mvn install:install-file -Dfile=jdbc4-3.0.jar -DgroupId=com.microsoft.jdbc -DartifactId=jdbc4 -Dversion=3.0 -Dpackaging=jar
-		>mvn install:install-file -Dfile=json-rdf\json-rdf-1.2.12.jar -DpomFile=json-rdf\pom.xml
-		>mvn install:install-file -Dfile=babel-bibtex-converter\babel-bibtex-converter-1.0-SNAPSHOT.jar -DpomFile=babel-bibtex-converter\pom.xml
-		>mvn install:install-file -Dfile=babel-engine\babel-engine-1.0-SNAPSHOT.jar -DpomFile=babel-engine\pom.xml
-		>mvn install:install-file -Dfile=babel-exhibit-converter\babel-exhibit-converter-1.0-SNAPSHOT.jar -DpomFile=babel-exhibit-converter\pom.xml
-		>mvn install:install-file -Dfile=babel-interfaces\babel-interfaces-1.0-SNAPSHOT.jar -DpomFile=babel-interfaces\pom.xml
-		>mvn install:install-file -Dfile=babel-tsv-converter\babel-tsv-converter-1.0-SNAPSHOT.jar -DpomFile=babel-tsv-converter\pom.xml
-		>mvn install:install-file -Dfile=babel-xls-converter\babel-xls-converter-1.0-SNAPSHOT.jar -DpomFile=babel-xls-converter\pom.xml
+		>mvn install:install-file -Dfile=jsonld-java\jsonld-java-1.0.0-SNAPSHOT.jar -DpomFile=jsonld-java\pom.xml
+		>mvn install:install-file -Dfile=jsonld-java-jena\jsonld-java-jena-1.0.0-SNAPSHOT.jar -DpomFile=jsonld-java-jena\pom.xml
 
 	See http://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html for more details
 	
