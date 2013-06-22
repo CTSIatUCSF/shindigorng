@@ -21,8 +21,8 @@ Build
 	
 	Go to ..\orng-connector\jars\ and type the following commands:
 		>mvn install:install-file -Dfile=jdbc4-3.0.jar -DgroupId=com.microsoft.jdbc -DartifactId=jdbc4 -Dversion=3.0 -Dpackaging=jar
-		>mvn install:install-file -Dfile=jsonld-java\jsonld-java-1.0.0-SNAPSHOT.jar -DpomFile=jsonld-java\pom.xml
-		>mvn install:install-file -Dfile=jsonld-java-jena\jsonld-java-jena-1.0.0-SNAPSHOT.jar -DpomFile=jsonld-java-jena\pom.xml
+		>mvn install:install-file -Dfile=jsonld-java\jsonld-java-0.2-SNAPSHOT.jar -DpomFile=jsonld-java\pom.xml
+		>mvn install:install-file -Dfile=jsonld-java-jena\jsonld-java-jena-0.2-SNAPSHOT.jar -DpomFile=jsonld-java-jena\pom.xml
 
 	See http://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html for more details
 	
