@@ -17,15 +17,18 @@
  */
 
 /**
- * Service to retrieve People via JSON RPC opensocial calls.
- * Called in onLoad handler as osapi.people.get could be defined by
+ * Service to retrieve JSON-LD via JSON RPC opensocial calls.
+ * Called in onLoad handler as osapi.rdf.get could be defined by
  * the container over the gadgets.rpc transport.
+ * 
+ * Options for output are "minimal" or "full", default is "minimal"
  */
 gadgets.util.registerOnLoadHandler(function() {
 
   // No point defining these if osapi.people.get doesn't exist
   if (osapi && osapi.rdf && osapi.rdf.get) {
-    /**
+	  
+	  /**
     * Helper functions to get People.
     * Options specifies parameters to the call as outlined in the
     * JSON RPC Opensocial Spec
@@ -45,23 +48,7 @@ gadgets.util.registerOnLoadHandler(function() {
       options.containerSessionId = parent.my.containerSessionId; 
       options.userId = '@viewer';
       options.groupId = '@self';
-      return osapi.rdf.get(options);
-    };
-
-    /**
-      * Function to get Viewer's friends'  profiles.
-      * Options specifies parameters to the call as outlined in the
-      * JSON RPC Opensocial Spec
-      * http://www.opensocial.org/Technical-Resources/opensocial-spec-v081/rpc-protocol
-      * @param {object.<JSON>} The JSON object of parameters for the specific request.
-      */
-    osapi.rdf.getViewerFriends = function(options) {
-      options = options || {};
-      options.output = options.output || "minimal";
-      options.containerSessionId = parent.my.containerSessionId; 
-      options.userId = '@viewer';
-      options.groupId = '@friends';
-      return osapi.rdf.get(options);
+      return new osapi.rdf.get(options);
     };
 
     /**
@@ -81,22 +68,6 @@ gadgets.util.registerOnLoadHandler(function() {
     };
 
     /**
-      * Function to get Owner's friends' profiles.
-      * Options specifies parameters to the call as outlined in the
-      * JSON RPC Opensocial Spec
-      * http://www.opensocial.org/Technical-Resources/opensocial-spec-v081/rpc-protocol
-      * @param {object.<JSON>} The JSON object of parameters for the specific request.
-      */
-    osapi.rdf.getOwnerFriends = function(options) {
-      options = options || {};
-      options.output = options.output || "minimal";
-      options.containerSessionId = parent.my.containerSessionId; 
-      options.userId = '@owner';
-      options.groupId = '@friends';
-      return osapi.rdf.get(options);
-    };
-
-    /**
      * Function to get any RDF converted to JSON
      * @param {String} The uri for the specific request.
      */
@@ -110,46 +81,13 @@ gadgets.util.registerOnLoadHandler(function() {
         options.userId = '@userId';
         options.groupId = '@self';
         options.uri = uri;
-        return osapi.rdf.get(options);
+        var foo = osapi.rdf.get(options);
+        foo.oldexecute = foo.execute;
+        foo.execute = function(callback) {
+        	oldexecute(callback);
+        }
+        return new osapi.rdf.get(options);
       };
       
-      /**
-       * Function to rebuild references in the graph.
-       */
-      osapi.rdf.deserialize = function(uri, rdf) {
-    	  var map = {};
-    	  var root;
-    	  // put everything in a map keyed by ID
-    	  for (var i = 0; i < rdf['@graph'].length; i++) {
-    		  var item = rdf['@graph'][i];
-    		  map[item['@id']] = item;
-    		  if (item['@id'] == uri) {
-    			  root = item;
-    		  } 
-      	  }
-    	  
-    	  // now go through root and swap out URI's with actual objects
-    	  for (var key in root) {
-			  osapi.rdf._swap(map, root, key);
-    	  }
-    	  return root;
-        };
-      
-        osapi.rdf._swap = function(map, base, key) {
-          if (key.charAt(0) == '@') {
-        	  return;
-          }
-          var obj = base[key];
-          if (typeof(obj) == 'string') {
-			  if (map[obj]) {
-				  base[key] = map[obj];
-			  }
-		  }
-  		  else if (typeof(obj) == 'object') {
-  			  for (var key in obj) {
-  				osapi.rdf._swap(map, obj, key)
-  			  }
-		  }
-        };
   }
 });

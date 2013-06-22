@@ -72,7 +72,7 @@ public class OrngPersonService implements PersonService {
 		try {
 			// There can be only one!
 			if (strId != null) {
-				JSONObject personJSON =  rdfService.getRDF(strId, RdfService.MINIMAL, null, token);
+				JSONObject personJSON =  rdfService.getRDF(strId, null, null, token);
 				Person personObj = parsePerson(strId, personJSON);
 				return ImmediateFuture.newInstance(personObj);
 			}
