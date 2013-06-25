@@ -2,7 +2,6 @@ package edu.ucsf.orng.shindig.spi;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
 	
 	private static final Logger LOG = Logger.getLogger(OrngAppDataService.class.getName());	
 	
-	private String table;
+	private String read_sp;
 	private String delete_sp;
 	private String upsert_sp;
 	private OrngDBUtil dbUtil;
@@ -42,12 +41,12 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
 			@Named("orng.system") String system, OrngDBUtil dbUtil)
 			throws Exception {
 		if (PROFILES.equalsIgnoreCase(system)) {
-			this.table = "[ORNG].[AppData]";
+			this.read_sp = "[ORNG].[ReadAppData]";
 			this.delete_sp = "[ORNG].[DeleteAppData]";
 			this.upsert_sp = "[ORNG].[UpsertAppData]";
 		}
 		else {
-			this.table = "orng_appdata";
+			//this.table = "orng_appdata";
 			this.delete_sp = "orng_deleteAppData";
 			this.upsert_sp = "orng_upsertAppData";
 		}
@@ -126,12 +125,12 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
 
     private String getData(Connection conn, String id, String appId, String key)
             throws SQLException {
-        PreparedStatement ps = conn
-                .prepareStatement("select value from " + table + " where appId=? AND uri = ? AND keyName = ?");
-        ps.setString(1, appId);
-        ps.setString(2, id);
-        ps.setString(3, key);
-        ResultSet rs = ps.executeQuery();
+        CallableStatement cs = conn
+		        .prepareCall("{ call " + read_sp + "(?, ?, ?)}");
+        cs.setString(1,id);
+        cs.setInt(2, Integer.parseInt(appId));
+        cs.setString(3, key);
+        ResultSet rs = cs.executeQuery();
         if (rs.next()) {
             return rs.getString("value");
         }

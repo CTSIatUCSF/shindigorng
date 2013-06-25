@@ -6,8 +6,6 @@ var jsonldHelper = {};
 * Function to rebuild references in the graph and return the item originally requested.
 */
 jsonldHelper.getItem = function (data) {
-    // inside of shindig data = data, but externally we find data = data.entry;
-    data = data.entry || data;
     var jsonld = data.jsonld;
     var map = {};
     if (!jsonld.hasOwnProperty('@graph')) {

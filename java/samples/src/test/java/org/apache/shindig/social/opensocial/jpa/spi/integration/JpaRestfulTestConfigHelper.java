@@ -72,7 +72,7 @@ public class JpaRestfulTestConfigHelper {
             PersonHandler.class, MessageHandler.class));
 
     servlet.setHandlerRegistry(registry);
-    servlet.setBeanConverters(new BeanJsonConverter(injector),
+    servlet.setBeanConverters(new BeanJsonConverter(injector), 
         new BeanXStreamConverter(new XStream081Configuration(injector)),
         new BeanXStreamAtomConverter(new XStream081Configuration(injector)));
 

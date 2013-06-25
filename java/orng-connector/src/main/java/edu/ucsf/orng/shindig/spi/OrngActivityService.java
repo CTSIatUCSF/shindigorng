@@ -2,8 +2,8 @@ package edu.ucsf.orng.shindig.spi;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLXML;
@@ -47,7 +47,10 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 	 * The XML<->Bean converter
 	 */
 	private BeanConverter converter;
-	private String table;
+	private String read_sp;
+	private String readAll_sp;
+	private String delete_sp;
+	private String insert_sp;
 	private OrngDBUtil dbUtil;
 
 	@Inject
@@ -56,7 +59,12 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 			@Named("shindig.bean.converter.xml") BeanConverter converter, OrngDBUtil dbUtil)
 			throws Exception {
 		this.converter = converter;
-		this.table = PROFILES.equalsIgnoreCase(system) ? "[ORNG].[Activity]" : "orng_activity"; 
+		if (PROFILES.equalsIgnoreCase(system)) {
+			this.read_sp = "[ORNG].[ReadActivity]";
+			this.readAll_sp = "[ORNG].[ReadAllActivities]";
+			this.delete_sp = "[ORNG].[DeleteActivity]";
+			this.insert_sp = "[ORNG].[InsertActivity]";
+		}
 		this.dbUtil = dbUtil;
 	}
 
@@ -214,10 +222,11 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 
 
 	private List<Activity> getAllActivities(Connection conn, String id, String appId) throws SQLException {
-		String sql = "select activity from " + table + " where uri = ?" + (appId != null ? " AND appId=" + appId: "");
-		PreparedStatement ps = conn.prepareStatement(sql);
-		ps.setString(1, id);		
-		ResultSet rs = ps.executeQuery();
+        CallableStatement cs = conn
+		        .prepareCall("{ call " + readAll_sp + "(?, ?)}");
+		cs.setString(1, id);
+		cs.setInt(2, Integer.parseInt(appId));
+		ResultSet rs = cs.executeQuery();
 		List<Activity> retVal = Lists.newArrayList();
 		while (rs.next()) {
 			retVal.add( converter.convertToObject( rs.getString("activity"), Activity.class)) ;
@@ -227,11 +236,12 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 
 	private Activity getActivity(Connection conn, String id, String appId,
 			int activityId) throws SQLException {
-		String sql = "select activity from " + table + " where uri = ? AND activityId = ?" + (appId != null ? " AND appId=" + appId: "");
-		PreparedStatement ps = conn.prepareStatement(sql);
-		ps.setString(1, id);
-		ps.setInt(2, activityId);
-		ResultSet rs = ps.executeQuery();
+        CallableStatement cs = conn
+		        .prepareCall("{ call " + read_sp + "(?, ?, ?)}");
+		cs.setString(1, id);
+		cs.setInt(2, Integer.parseInt(appId));
+		cs.setInt(3, activityId);
+		ResultSet rs = cs.executeQuery();
 		if (rs.next()) {
 			return converter.convertToObject( rs.getString("activity"), Activity.class) ;
 		}
@@ -240,12 +250,12 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 
 	private void deleteActivity(Connection conn, String id, String appId,
 			int activityId) throws SQLException {
-		PreparedStatement ps = conn
-				.prepareStatement("delete from " + table + " where appId=? AND uri = ? AND activityId = ?");
-		ps.setString(1, appId);
-		ps.setString(2, id);
-		ps.setInt(3, activityId);
-		ps.execute();
+        CallableStatement cs = conn
+		        .prepareCall("{ call " + delete_sp + "(?, ?, ?)}");
+		cs.setString(1, id);
+		cs.setInt(2, Integer.parseInt(appId));
+		cs.setInt(3, activityId);
+        cs.execute();
 	}
 
 	private void insertActivity(Connection conn, String id, String appId,
@@ -270,18 +280,13 @@ public class OrngActivityService implements ActivityService, OrngProperties {
         //baos now has the content we want to persist
 		// To TEST that we can rebuild object
         //Activity foo = converter.convertToObject(baos.toString(), Activity.class);
-		
-		String sql = "insert into " + table + " (appId, uri, activity" + (
-				activityId > 0 ? ", activityId) VALUES (?,?,?,?)" : ") VALUES (?,?,?)");
-		PreparedStatement ps = conn
-				.prepareStatement(sql);
-		ps.setString(1, appId);
-		ps.setString(2, id);
-		ps.setSQLXML(3, sqlXML);
-		if (activityId > 0) {
-			ps.setInt(4, activityId);
-		}
-		ps.execute();
+        CallableStatement cs = conn
+		        .prepareCall("{ call " + insert_sp + "(?, ?, ?, ?)}");
+		cs.setString(1, id);
+		cs.setInt(2, Integer.parseInt(appId));
+		cs.setInt(3, activityId);
+		cs.setSQLXML(4, sqlXML);
+        cs.execute();
 	}
 
 }

@@ -131,6 +131,7 @@ public class SampleSignedRequestServlet extends HttpServlet {
 		List<OAuth.Parameter> parameters = new ArrayList<OAuth.Parameter>();
 
 		for (Object e : request.getParameterMap().entrySet()) {
+			@SuppressWarnings("unchecked")
 			Map.Entry<String, String[]> entry = (Map.Entry<String, String[]>) e;
 
 			for (String value : entry.getValue()) {

@@ -1,7 +1,7 @@
 package edu.ucsf.orng.shindig.spi;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -33,14 +33,20 @@ import edu.ucsf.orng.shindig.model.OrngMessageCollection;
  */
 public class OrngMessageService implements MessageService, OrngProperties {
 
-	private String table;
+	private String read_sp;
+	private String readCollections_sp;
+	private String insert_sp;
 	private OrngDBUtil dbUtil;
 
 	@Inject
 	public OrngMessageService(
 			@Named("orng.system") String system, OrngDBUtil dbUtil)
 			throws Exception {
-		this.table = PROFILES.equalsIgnoreCase(system) ? "[ORNG].[Messages]" : "orng_messages"; 
+		if (PROFILES.equalsIgnoreCase(system)) {
+			this.read_sp = "[ORNG].[ReadMessages]";
+			this.readCollections_sp = "[ORNG].[ReadMessageCollections]";
+			this.insert_sp = "[ORNG].[InsertMessage]";
+		}
 		this.dbUtil = dbUtil;
 	}
 	
@@ -145,30 +151,22 @@ public class OrngMessageService implements MessageService, OrngProperties {
     private List<Message> getMessages(Connection conn, String user, String coll, List<String> msgIds)
             throws SQLException {
         List<Message> retVal = Lists.newArrayList();
-        String sql = "select * from " + table + " where recipient = ? ";
-        if (coll != null && !coll.trim().equals("")) {
-            sql += "AND collection = ? ";
-        }
+        CallableStatement cs = conn
+		        .prepareCall("{ call " + read_sp + "(?, ?, ?)}");
+		cs.setString(1, user);
+		cs.setString(2, coll);
         if (msgIds != null && msgIds.size() > 0) {
-            sql += "AND msgId in ( ?";
-            for (int i = 2; i <= msgIds.size(); i++) {
-                sql += ", ?";
+    		String ids = "(";
+            for (String msgId : msgIds) {
+                ids += msgId + ",";
             }
-            sql += " )";
+            ids = ids.substring(0, ids.length()-1) + ")";
+            cs.setString(3, ids);            
         }
-        PreparedStatement ps = conn.prepareCall(sql);
-        int index = 0;
-        ps.setString(index++, user);
-        if (coll != null && !coll.trim().equals("")) {
-            ps.setString(index++, coll);
+        else {
+        	cs.setString(3, null);
         }
-        if (msgIds != null && msgIds.size() > 0) {
-            for (int i = 0; i < msgIds.size(); i++) {
-                ps.setString(index++, msgIds.get(i));
-            }
-        }
-
-        ResultSet rs = ps.executeQuery();
+		ResultSet rs = cs.executeQuery();
         while (rs.next()) {
             OrngMessage pm = new OrngMessage();
             pm.setId(rs.getString("msgId"));
@@ -190,27 +188,24 @@ public class OrngMessageService implements MessageService, OrngProperties {
 
     private void addMessage(Connection conn, String from, String to, String coll, Message msg)
             throws SQLException {
-        String sql = "insert into " + table + " (msgId, coll, title, body, senderUri, recipientUri) VALUES (?, ?, ?, ?, ?, ?)";
-        PreparedStatement ps = conn.prepareCall(sql);
-        ps.setString(0, msg.getId());
-        ps.setString(1, coll);
-        ps.setString(2, msg.getTitle());
-        ps.setString(3, msg.getBody());
-        ps.setString(4, from);
-        ps.setString(5, to);
-        ps.execute();
+        CallableStatement cs = conn
+		        .prepareCall("{ call " + insert_sp + "(?, ?, ?, ?, ?, ?)}");
+        cs.setString(0, msg.getId());
+        cs.setString(1, coll);
+        cs.setString(2, msg.getTitle());
+        cs.setString(3, msg.getBody());
+        cs.setString(4, from);
+        cs.setString(5, to);
+        cs.execute();
     }
 
     private List<MessageCollection> getMessageCollections(Connection conn, String user)
             throws SQLException {
         List<MessageCollection> retVal = Lists.newArrayList();
-        String sql = "select distinct(coll) from " + table + " where recipientUri = ? ";
-        
-        PreparedStatement ps = conn.prepareCall(sql);
-        int index = 0;
-        ps.setString(index++, user);
-
-        ResultSet rs = ps.executeQuery();
+        CallableStatement cs = conn
+		        .prepareCall("{ call " + readCollections_sp + "(?)}");
+		cs.setString(1, user);
+        ResultSet rs = cs.executeQuery();
         while (rs.next()) {
             OrngMessageCollection pmc = new OrngMessageCollection();
             pmc.setId(rs.getString("coll"));

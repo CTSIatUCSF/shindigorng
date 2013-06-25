@@ -10,14 +10,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.SelectorProvider;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -103,7 +97,8 @@ public class OrngCrypterSecurityTokenCodec extends
 			final Socket s = ssc.accept().socket();
 			Thread thread = new Thread(new Runnable() {
 				public void run() {
-					try {
+					try {						
+						// we expect exceptions here
 						BufferedReader in = new BufferedReader(new InputStreamReader(
 								s.getInputStream()));
 						PrintWriter out = new PrintWriter(s.getOutputStream(), true);
@@ -117,8 +112,10 @@ public class OrngCrypterSecurityTokenCodec extends
 						}
 						in.close();
 						out.close();
+					} catch (IOException e) {
+						LOG.log(Level.INFO, "Socket Exception :" + e.getMessage());
 					} catch (Exception e) {
-						LOG.log(Level.INFO, "Socket Exception", e);
+						LOG.log(Level.WARNING, e.getMessage(), e);
 					}
 				}
 			});
