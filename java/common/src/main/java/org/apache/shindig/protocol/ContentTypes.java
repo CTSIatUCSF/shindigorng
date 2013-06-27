@@ -67,6 +67,7 @@ public final class ContentTypes {
   public static final String OUTPUT_JSON_CONTENT_TYPE = "application/json";
   public static final String OUTPUT_XML_CONTENT_TYPE = "application/xml";
   public static final String OUTPUT_ATOM_CONTENT_TYPE = "application/atom+xml";
+  public static final String OUTPUT_JSONLD_CONTENT_TYPE = "application/ld+json";
 
   /**
    * Extract the mime part from an Http Content-Type header

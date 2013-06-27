@@ -81,11 +81,6 @@ gadgets.util.registerOnLoadHandler(function() {
         options.userId = '@userId';
         options.groupId = '@self';
         options.uri = uri;
-        var foo = osapi.rdf.get(options);
-        foo.oldexecute = foo.execute;
-        foo.execute = function(callback) {
-        	oldexecute(callback);
-        }
         return new osapi.rdf.get(options);
       };
       

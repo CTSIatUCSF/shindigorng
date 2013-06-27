@@ -17,7 +17,6 @@
  */
 package edu.ucsf.orng.shindig.service;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 

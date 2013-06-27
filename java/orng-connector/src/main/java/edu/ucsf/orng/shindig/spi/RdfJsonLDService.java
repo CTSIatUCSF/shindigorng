@@ -1,6 +1,7 @@
 package edu.ucsf.orng.shindig.spi;
 
 import java.net.URLEncoder;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
@@ -84,6 +85,7 @@ public class RdfJsonLDService implements RdfService {
 				}		
 			}
 		}
+    	LOG.log(Level.INFO, "getRDF :" + url );
         final Options opts = new Options(local ? systemBase : "");
         opts.format = RDFXML;
         opts.outputForm = "compacted";  // [compacted|expanded|flattened]
