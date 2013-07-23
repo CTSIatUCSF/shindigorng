@@ -40,7 +40,7 @@ public class OrngDBUtil implements OrngProperties {
 			@Named("orng.dbURL") String dbUrl,
 			@Named("orng.dbUser") String dbUser,
 			@Named("orng.dbPassword") String dbPassword) {
-		this.apps_table = PROFILES.equalsIgnoreCase(system) ? "[ORNG].[Apps]" : "orng_apps";
+		this.apps_table = PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Apps]" : "orng_apps";
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;

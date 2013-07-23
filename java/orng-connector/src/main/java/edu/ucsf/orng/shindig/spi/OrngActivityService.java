@@ -60,10 +60,10 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 			throws Exception {
 		this.converter = converter;
 		if (PROFILES.equalsIgnoreCase(system)) {
-			this.read_sp = "[ORNG].[ReadActivity]";
-			this.readAll_sp = "[ORNG].[ReadAllActivities]";
-			this.delete_sp = "[ORNG].[DeleteActivity]";
-			this.insert_sp = "[ORNG].[InsertActivity]";
+			this.read_sp = "[ORNG.].[ReadActivity]";
+			this.readAll_sp = "[ORNG.].[ReadAllActivities]";
+			this.delete_sp = "[ORNG.].[DeleteActivity]";
+			this.insert_sp = "[ORNG.].[InsertActivity]";
 		}
 		this.dbUtil = dbUtil;
 	}

@@ -41,9 +41,9 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
 			@Named("orng.system") String system, OrngDBUtil dbUtil)
 			throws Exception {
 		if (PROFILES.equalsIgnoreCase(system)) {
-			this.read_sp = "[ORNG].[ReadAppData]";
-			this.delete_sp = "[ORNG].[DeleteAppData]";
-			this.upsert_sp = "[ORNG].[UpsertAppData]";
+			this.read_sp = "[ORNG.].[ReadAppData]";
+			this.delete_sp = "[ORNG.].[DeleteAppData]";
+			this.upsert_sp = "[ORNG.].[UpsertAppData]";
 		}
 		else {
 			//this.table = "orng_appdata";

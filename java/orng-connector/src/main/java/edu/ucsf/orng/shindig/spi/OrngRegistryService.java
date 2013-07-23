@@ -2,7 +2,6 @@ package edu.ucsf.orng.shindig.spi;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class OrngRegistryService implements OrngProperties {
 	
 	private static final Logger LOG = Logger.getLogger(OrngRegistryService.class.getName());	
 	
-	private String table;
+	private String read_sp;
 	private String upsert_sp;
 	private OrngDBUtil dbUtil;
 	
@@ -39,8 +38,8 @@ public class OrngRegistryService implements OrngProperties {
 			@Named("orng.system") String system, OrngDBUtil dbUtil)
 			throws Exception {
 		if (PROFILES.equalsIgnoreCase(system)) {
-			this.table = "[ORNG].[AppRegistry]";
-			this.upsert_sp = "[ORNG].[RegisterAppPerson]";
+			this.read_sp = "[ORNG.].[ReadRegistry]";
+			this.upsert_sp = "[ORNG.].[RegisterAppPerson]";
 		}
 		else {
 			// TODO
@@ -92,11 +91,11 @@ public class OrngRegistryService implements OrngProperties {
 
     private String getVisibility(Connection conn, String id, String appId)
             throws SQLException {
-        PreparedStatement ps = conn
-                .prepareStatement("select visibility from " + table + " where appId=? AND uri = ?");
-        ps.setString(1, appId);
-        ps.setString(2, id);
-        ResultSet rs = ps.executeQuery();
+        CallableStatement cs = conn
+		        .prepareCall("{ call " + read_sp + "(?, ?)}");
+		cs.setString(1, id);
+		cs.setInt(2, Integer.parseInt(appId));
+        ResultSet rs = cs.executeQuery();
         if (rs.next()) {
             return rs.getString(1);
         }
@@ -112,5 +111,4 @@ public class OrngRegistryService implements OrngProperties {
 		cs.setString(3, visibility);
         cs.execute();
     }
-
 }
