@@ -80,7 +80,11 @@ public class RdfJsonLDService implements RdfService {
 					}
 					if (containerSessionId != null)
 					{
-						url += "&ContainerSessionID=" + containerSessionId + "&Viewer=" + URLEncoder.encode(token.getViewerId(), "UTF-8");					
+						url += "&ContainerSessionID=" + containerSessionId;					
+					}
+					if (token.getViewerId() != null)
+					{
+						url += "&Viewer=" + URLEncoder.encode(token.getViewerId(), "UTF-8");					
 					}
 				}		
 			}
