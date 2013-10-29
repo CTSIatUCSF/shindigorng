@@ -44,13 +44,13 @@ public class OrngDBUtil implements OrngProperties {
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;
-		String sql = "select appid, url from " + apps_table;
+		String sql = "select AppID, Url from " + apps_table;
 		Connection conn = getConnection();
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
-				addToAppIdsMap(rs.getString("url").toLowerCase(), rs.getString("appid"));
+				addToAppIdsMap(rs.getString("Url").toLowerCase(), rs.getString("AppID"));
 			}
 		}
 		catch (SQLException se) {
@@ -89,19 +89,19 @@ public class OrngDBUtil implements OrngProperties {
 			LOG.log(Level.INFO, url + " is not a number after all");
 		}
 		// check DB
-		String sql = "select appid from " + apps_table + " where url = ?";
+		String sql = "select AppID from " + apps_table + " where Url = ?";
 		Connection conn = getConnection();
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1, url);		
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				addToAppIdsMap(url, rs.getString("appid"));
-				return rs.getString("appid");
+				addToAppIdsMap(url, rs.getString("AppID"));
+				return rs.getString("AppID");
 			}
 		}
 		catch (SQLException se) {
-	        LOG.log(Level.SEVERE, "Error reading appid", se);
+	        LOG.log(Level.SEVERE, "Error reading AppID", se);
 		}
 		finally {
 			try { conn.close(); } catch (SQLException se) {

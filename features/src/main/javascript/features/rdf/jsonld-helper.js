@@ -50,7 +50,7 @@ jsonldHelper.findByUri = function (map, base, uri) {
         return map;
     }
     for (var key in map) {
-        item = map[key];
+        var item = map[key];
         if (typeof item == 'object' && item.hasOwnProperty('@id') && uri == base + item['@id']) {
             return item;
         }
