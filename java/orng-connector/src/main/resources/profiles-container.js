@@ -69,16 +69,16 @@
 // iframeBaseUri will automatically have the host inserted
 // if locked domain is enabled and the implementation supports it.
 // query parameters will be added.
-"gadgets.iframeBaseUri" : "/shindigorng/gadgets/ifr",
-"gadgets.uri.iframe.basePath" : "/shindigorng/gadgets/ifr",
+"gadgets.iframeBaseUri" : "/${SHINDIGORNG_PATH}/gadgets/ifr",
+"gadgets.uri.iframe.basePath" : "/${SHINDIGORNG_PATH}/gadgets/ifr",
 
 // jsUriTemplate will have %host% and %js% substituted.
 // No locked domain special cases, but jsUriTemplate must
 // never conflict with a lockedDomainSuffix.
-"gadgets.jsUriTemplate" : "http://%host%/shindigorng/gadgets/js/%js%",
+"gadgets.jsUriTemplate" : "http://%host%/${SHINDIGORNG_PATH}/gadgets/js/%js%",
 	
 // Callback URL.  Scheme relative URL for easy switch between https/http.
-"gadgets.uri.oauth.callbackTemplate" : "//%host%/shindigorng/gadgets/oauthcallback",
+"gadgets.uri.oauth.callbackTemplate" : "//%host%/${SHINDIGORNG_PATH}/gadgets/oauthcallback",
 
 // Use an insecure security token by default
 //"gadgets.securityTokenType" : "insecure",
@@ -86,12 +86,12 @@
 // Config param to load Opensocial data for social
 // preloads in data pipelining.  %host% will be
 // substituted with the current host.
-"gadgets.osDataUri" : "http://%host%/shindigorng/rpc",
+"gadgets.osDataUri" : "http://%host%/${SHINDIGORNG_PATH}/rpc",
 
 // Uncomment these to switch to a secure version
 //
 "gadgets.securityTokenType" : "secure",
-//With shindigorng this is specified in shindigorng.properties!!!!
+//With shindigorng this is specified in ${SHINDIGORNG_PATH}.properties!!!!
 //"gadgets.securityTokenKeyFile" : "/shindig/openssl/securitytokenkey.txt",
 //This next value is a decent one to use, but people wanting to seriously use OAuth may want
 //to configure in their own value.
@@ -109,16 +109,16 @@
 
 // Default Js Uri config: also must be overridden.
 "gadgets.uri.js.host": "${Cur['defaultShindigTestHost']}",
-"gadgets.uri.js.path": "/shindigorng/gadgets/js",
+"gadgets.uri.js.path": "/${SHINDIGORNG_PATH}/gadgets/js",
 
 // Default concat Uri config; used for testing.
 "gadgets.uri.concat.host" : "${Cur['defaultShindigProxyConcatAuthority']}",
-"gadgets.uri.concat.path" : "/shindigorng/gadgets/concat",
+"gadgets.uri.concat.path" : "/${SHINDIGORNG_PATH}/gadgets/concat",
 "gadgets.uri.concat.js.splitToken" : "false",
 
 // Default proxy Uri config; used for testing.
 "gadgets.uri.proxy.host" : "${Cur['defaultShindigProxyConcatAuthority']}",
-"gadgets.uri.proxy.path" : "/shindigorng/gadgets/proxy",
+"gadgets.uri.proxy.path" : "/${SHINDIGORNG_PATH}/gadgets/proxy",
 
 // This config data will be passed down to javascript. Please
 // configure your object using the feature name rather than
@@ -130,8 +130,8 @@
   "core.io" : {
     // Note: /proxy is an open proxy. Be careful how you expose this!
     // Note: Here // is replaced with the current protocol http/https
-    "proxyUrl" : "//%host%/shindigorng/gadgets/proxy?container=default&refresh=%refresh%&url=%url%%rewriteMime%",
-    "jsonProxyUrl" : "//%host%/shindigorng/gadgets/makeRequest"
+    "proxyUrl" : "//%host%/${SHINDIGORNG_PATH}/gadgets/proxy?container=default&refresh=%refresh%&url=%url%%rewriteMime%",
+    "jsonProxyUrl" : "//%host%/${SHINDIGORNG_PATH}/gadgets/makeRequest"
   },
   "views" : {
 	    "home" : {
@@ -222,7 +222,7 @@
     // parameter if it passes input validation and is not null.
     // This should never be on the same host in a production environment!
     // Only use this for TESTING!
-    "parentRelayUrl" : "/shindigorng/container/rpc_relay.html",
+    "parentRelayUrl" : "/${SHINDIGORNG_PATH}/container/rpc_relay.html",
 
     // If true, this will use the legacy ifpc wire format when making rpc
     // requests.
@@ -242,9 +242,9 @@
   "opensocial" : {
     // Path to fetch opensocial data from
     // Must be on the same domain as the gadget rendering server
-    "path" : "http://%host%/shindigorng/rpc",
+    "path" : "http://%host%/${SHINDIGORNG_PATH}/rpc",
     // Path to issue invalidate calls
-    "invalidatePath" : "http://%host%/shindigorng/rpc",
+    "invalidatePath" : "http://%host%/${SHINDIGORNG_PATH}/rpc",
     "domain" : "shindig",
     "enableCaja" : false,
     "supportedOntologies" : ["vivo-core-public-1.4"],
@@ -265,7 +265,7 @@
   },
   "osapi" : {
     // The endpoints to query for available JSONRPC/REST services
-    "endPoints" : [ "http://%host%/shindigorng/rpc" ]
+    "endPoints" : [ "http://%host%/${SHINDIGORNG_PATH}/rpc" ]
   },
   "osml": {
     // OSML library resource.  Can be set to null or the empty string to disable OSML

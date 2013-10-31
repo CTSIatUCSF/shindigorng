@@ -2,6 +2,7 @@ package edu.ucsf.orng.shindig.config;
 
 import org.apache.shindig.auth.SecurityTokenCodec;
 import org.apache.shindig.common.PropertiesModule;
+import org.apache.shindig.config.JsonContainerConfig;
 import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
 import org.apache.shindig.social.opensocial.spi.ActivityService;
 import org.apache.shindig.social.opensocial.spi.AppDataService;
@@ -21,10 +22,10 @@ import edu.ucsf.orng.shindig.spi.RdfService;
 
 public class OrngPropertiesModule extends PropertiesModule implements OrngProperties {//SocialApiGuiceModule {
 	
-	private final static String DEFAULT_PROPERTIES = "shindigorng.properties";	
+	private final static String PROPERTIES_SUFFIX = ".properties";	
 	
 	public OrngPropertiesModule() {
-		super(DEFAULT_PROPERTIES);
+		super(System.getProperty(JsonContainerConfig.SHINDIGORNG_PATH) + PROPERTIES_SUFFIX);
 		getProperties().setProperty("shindig.containers.default", "res://" + 
 		this.getProperties().getProperty("orng.system").toLowerCase() + "-container" +
 		(this.getProperties().getProperty("orng.systemDomain").toLowerCase().startsWith("https") ? "-https.js" : ".js"));		
@@ -33,7 +34,7 @@ public class OrngPropertiesModule extends PropertiesModule implements OrngProper
 	@Override
 	protected void configure() {
 		super.configure();
-	    
+		
 		bind(String.class).annotatedWith(Names.named("shindig.canonical.json.db"))
 			.toInstance("sampledata/canonicaldb.json");
 	    try {
@@ -56,5 +57,4 @@ public class OrngPropertiesModule extends PropertiesModule implements OrngProper
 
         bind(OAuthDataStore.class).to(SampleOAuthDataStore.class);
 	}
-
 }

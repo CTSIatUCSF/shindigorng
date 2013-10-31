@@ -26,6 +26,7 @@ import com.google.inject.Module;
 import com.google.inject.Stage;
 import com.google.inject.tools.jmx.Manager;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shindig.config.JsonContainerConfig;
 
 import java.util.List;
 
@@ -94,6 +95,8 @@ public class GuiceServletContextListener implements ServletContextListener {
    * @param context
    */
   private void setSystemProperties(ServletContext context){
+	// added by UCSF for ORNG, drop the leading '/'
+	System.setProperty(JsonContainerConfig.SHINDIGORNG_PATH, context.getContextPath().substring(1));
     String systemProperties = context.getInitParameter(SYSTEM_PROPERTIES);
     String key=null;
     String value=null;

@@ -74,6 +74,7 @@ public class JsonContainerConfig extends AbstractContainerConfig {
   public static final String CONTAINER_KEY = "gadgets.container";
   public static final String SERVER_PORT = "SERVER_PORT";
   public static final String SERVER_HOST = "SERVER_HOST";
+  public static final String SHINDIGORNG_PATH = "SHINDIGORNG_PATH";
 
   private final Map<String, Map<String, Object>> config;
   private final Expressions expressions;
@@ -384,6 +385,7 @@ public class JsonContainerConfig extends AbstractContainerConfig {
       try {
         all.getJSONObject(DEFAULT_CONTAINER).put(SERVER_PORT, port);
         all.getJSONObject(DEFAULT_CONTAINER).put(SERVER_HOST, host);
+        all.getJSONObject(DEFAULT_CONTAINER).put(SHINDIGORNG_PATH, System.getProperty(SHINDIGORNG_PATH));
       } catch (JSONException e) {
         // ignore
       }
