@@ -19,10 +19,12 @@ import org.apache.shindig.social.opensocial.spi.UserId;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import edu.ucsf.orng.shindig.config.OrngProperties;
 
+@Singleton
 public class OrngDBUtil implements OrngProperties {
 	
 	private static final Logger LOG = Logger.getLogger(OrngDBUtil.class.getName());		
@@ -159,7 +161,7 @@ public class OrngDBUtil implements OrngProperties {
         return ids;
     }
     
-    Connection getConnection() {
+    public Connection getConnection() {
         try {
             Connection conn = DriverManager.getConnection(dbUrl, dbUser,
                     dbPassword);

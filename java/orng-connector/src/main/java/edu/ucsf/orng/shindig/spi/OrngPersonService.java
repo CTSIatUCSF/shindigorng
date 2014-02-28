@@ -1,15 +1,28 @@
 package edu.ucsf.orng.shindig.spi;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.common.cache.Cache;
+import org.apache.shindig.common.cache.CacheProvider;
 import org.apache.shindig.common.util.ImmediateFuture;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RestfulCollection;
@@ -26,23 +39,47 @@ import org.json.JSONObject;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
+import edu.ucsf.orng.shindig.config.OrngProperties;
 import edu.ucsf.orng.shindig.model.OrngName;
 import edu.ucsf.orng.shindig.model.OrngPerson;
+import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
 /**
  * Implementation of supported services backed by a JSON DB.
  */
-public class OrngPersonService implements PersonService {
+@Singleton
+public class OrngPersonService implements PersonService, OrngProperties {
 
 	private static final Logger LOG = Logger.getLogger(OrngPersonService.class.getName());	
 	
+	private String read_sp;
 	private final RdfService rdfService;
+	private final OrngDBUtil dbUtil;
+	private final Cache<String, Person> cache; 
+	private Map<String, Method> personSetMethods = new HashMap<String, Method>();
 
 	@Inject
-	public OrngPersonService(RdfService rdfService)
-	{
+	public OrngPersonService(@Named("orng.system") String system, RdfService rdfService, OrngDBUtil dbUtil, CacheProvider cacheProvider) {
 		this.rdfService = rdfService;
+		this.dbUtil = dbUtil;
+		if (PROFILES.equalsIgnoreCase(system)) {
+			this.read_sp = "[ORNG.].[ReadPerson]";
+		}
+		else {
+			//this.table = "orng_appdata";
+		}
+		// wire up set methods
+		for (Method method : OrngPerson.class.getDeclaredMethods()) {
+			if (method.getName().startsWith("set")) {
+				// should also test for accessibility and argument types, but wait on that
+				personSetMethods.put(method.getName().toLowerCase(), method);
+			}
+		}
+		// set up the cache
+		cache = cacheProvider.createCache("orngPerson");
 	}
 
 	public Future<RestfulCollection<Person>> getPeople(Set<UserId> userIds,
@@ -69,11 +106,17 @@ public class OrngPersonService implements PersonService {
 		String strId = id.getUserId(token);
 		LOG.log(Level.INFO, "getPerson uri=" + strId);
 		
+		Person personObj = cache.getElement(strId);
+		if (personObj != null) {
+			return ImmediateFuture.newInstance(personObj);
+		}
+		
 		try {
 			// There can be only one!
 			if (strId != null) {
 				JSONObject personJSON =  rdfService.getRDF(strId, null, null, token);
-				Person personObj = parsePerson(strId, personJSON);
+				personObj = parsePerson(strId, personJSON);
+				cache.addElement(strId, personObj);
 				return ImmediateFuture.newInstance(personObj);
 			}
 		} catch (MalformedURLException e) {
@@ -89,7 +132,7 @@ public class OrngPersonService implements PersonService {
 	}
 	
 	private Person parsePerson(String strId, JSONObject json) throws JSONException {
-		Person retVal = new OrngPerson();
+		OrngPerson retVal = new OrngPerson();
 		retVal.setId(strId);
 		if (json == null) {
 			return retVal;
@@ -120,8 +163,57 @@ public class OrngPersonService implements PersonService {
 			name.setFamilyName(json.getString("lastName"));
 		}
 		retVal.setName(name);
+		
+		addAdditionalInformation(retVal);
 
 		return retVal;
+	}
+	
+	// should we cache people?  This might be slow.
+	private void addAdditionalInformation(OrngPerson orngPerson) {
+        Connection conn = dbUtil.getConnection();
+		
+		try { 
+	        CallableStatement cs = conn
+			        .prepareCall("{ call " + read_sp + "(?)}");
+	        cs.setString(1, orngPerson.getId());
+	        ResultSet rs = cs.executeQuery();
+	        
+	        if (rs.next()) {
+	    		ResultSetMetaData rsmd = rs.getMetaData();
+	    		for (int idx = 1; idx <= rsmd.getColumnCount(); idx++) {
+	    			LOG.info(rsmd.getColumnLabel(idx) + " : " + rsmd.getColumnClassName(idx));
+	    			Method method = personSetMethods.get("set" + rsmd.getColumnLabel(idx).toLowerCase());
+	    			if (method != null && method.getParameterTypes().length == 1) {
+		    			LOG.info(method.getParameterTypes()[0].getName());
+	    			}
+	    			if (method != null && method.getParameterTypes().length == 1 && method.getParameterTypes()[0].getName().equals(rsmd.getColumnClassName(idx))) { 
+	    				try {
+							method.invoke(orngPerson, rs.getObject(idx));
+						} catch (IllegalAccessException e) {
+							LOG.log(Level.SEVERE, e.getMessage(), e);
+						} catch (IllegalArgumentException e) {
+							LOG.log(Level.SEVERE, e.getMessage(), e);
+						} catch (InvocationTargetException e) {
+							LOG.log(Level.SEVERE, e.getMessage(), e);
+						}
+	    			}
+	    		}
+	        }
+        } 
+		catch (SQLException se) {
+            throw new ProtocolException(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+                            .getMessage(), se);
+        }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
+		
 	}
 
 }

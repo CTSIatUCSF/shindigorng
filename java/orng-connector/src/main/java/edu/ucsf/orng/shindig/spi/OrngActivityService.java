@@ -36,11 +36,12 @@ import org.xml.sax.SAXException;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import edu.ucsf.orng.shindig.config.OrngProperties;
 
-
+@Singleton
 public class OrngActivityService implements ActivityService, OrngProperties {
 
 	/**

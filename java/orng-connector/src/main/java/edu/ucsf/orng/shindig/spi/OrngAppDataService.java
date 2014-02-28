@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.common.cache.Cache;
+import org.apache.shindig.common.cache.CacheProvider;
 import org.apache.shindig.common.util.ImmediateFuture;
 import org.apache.shindig.protocol.DataCollection;
 import org.apache.shindig.protocol.ProtocolException;
@@ -22,11 +24,12 @@ import org.apache.shindig.social.opensocial.spi.UserId;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import edu.ucsf.orng.shindig.config.OrngProperties;
 
-
+@Singleton
 public class OrngAppDataService implements AppDataService, OrngProperties {
 	
 	private static final Logger LOG = Logger.getLogger(OrngAppDataService.class.getName());	
@@ -34,11 +37,17 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
 	private String read_sp;
 	private String delete_sp;
 	private String upsert_sp;
+	private int appDataValueLimit;
 	private OrngDBUtil dbUtil;
+	private final Cache<String, String> cache; 
+	
+	public final static String CHUNKED_MARKER = "---DATA CHUNKED BY ORNG SYSTEM---";
+	public final static String CHUNKED_COUNT_SUFFIX = ".count";
 	
 	@Inject
 	public OrngAppDataService(
-			@Named("orng.system") String system, OrngDBUtil dbUtil)
+			@Named("orng.system") String system, @Named("orng.appDataValueLimit") String appDataValueLimit, 
+					OrngDBUtil dbUtil, CacheProvider cacheProvider)
 			throws Exception {
 		if (PROFILES.equalsIgnoreCase(system)) {
 			this.read_sp = "[ORNG.].[ReadAppData]";
@@ -50,13 +59,20 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
 			this.delete_sp = "orng_deleteAppData";
 			this.upsert_sp = "orng_upsertAppData";
 		}
+		this.appDataValueLimit = Integer.parseInt(appDataValueLimit);
 		this.dbUtil = dbUtil;
+		// set up the cache
+		cache = cacheProvider.createCache("orngAppData");   
+	}
+	
+	private static String getCacheKey(String appId, String id, String key) {
+		return appId + ":" + id + ":" + key;
 	}
 
 	public Future<DataCollection> getPersonData(Set<UserId> userIds, GroupId groupId,
     	      String appId, Set<String> fields, SecurityToken token) throws ProtocolException {    
 		appId = dbUtil.getAppId(appId);
-        Connection conn = dbUtil.getConnection();
+        Connection conn = null;
         try {
             Map<String, Map<String, String>> idToData = Maps.newHashMap();
             Set<String> idSet = dbUtil.getIdSet(userIds, groupId, token);
@@ -64,23 +80,41 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
             	if (id == null || id.isEmpty()) {
             		break;
             	}
-            	LOG.log(Level.INFO, "getPersonData " +id + " "
-                         + groupId.getType() + " " + appId);
-                Map<String, String> data = Maps.newHashMap();
+            	Map<String, String> data = Maps.newHashMap();
+            	// but does data have the value we need?  Still need to check
                 for (String key : fields) {
-                    String value = getData(conn, id, appId, key );
-                    LOG.log(Level.INFO, "  "+key+" "+ value);
+                	String cacheKey = getCacheKey(appId, id, key);
+                	String value = cache.getElement(cacheKey);
+                	if (value == null) {
+                		if (conn == null) {
+                			// don't get one till we need it
+                			conn = dbUtil.getConnection();            			
+                		}
+                        value = getData(conn, id, appId, key );
+                        LOG.log(Level.INFO, "  "+key+" "+ value);
+                        cache.addElement(cacheKey, value);
+                	}
                     data.put(key, value);
                 }
                 idToData.put(id, data);
             }
-			conn.close();
             return ImmediateFuture.newInstance(new DataCollection(idToData));
-        } catch (SQLException je) {
+        } 
+        catch (SQLException je) {
             throw new ProtocolException(
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, je
                             .getMessage(), je);
         }
+		finally {
+			try {             
+				if (conn != null) {
+					conn.close();
+				}
+			} 
+			catch (SQLException se) {
+				throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se.getMessage(), se);
+			}
+		}
     }
 
     public Future<Void> deletePersonData(UserId userId, GroupId groupId,
@@ -93,6 +127,7 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
         try {
             for (String key : fields) {
                 deleteData(conn, id, appId, key);
+    			cache.removeElement(getCacheKey(appId, id, key));
             }
 			conn.close();
             return ImmediateFuture.newInstance(null);
@@ -101,6 +136,13 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
                             .getMessage(), se);
         }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
     }
 
     public Future<Void> updatePersonData(UserId userId, GroupId groupId,
@@ -111,16 +153,23 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
         String id = userId.getUserId(token);
         try {
             for (String key : values.keySet()) {
-            	String value = values.get(key);
+            	String value = values.get(key);  // somehow this can be an int
+    			cache.addElement(getCacheKey(appId, id, key), value);
                 upsertData(conn, id, appId, key, value);
             }
-			conn.close();
             return ImmediateFuture.newInstance(null);
         } catch (SQLException se) {
             throw new ProtocolException(
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
                             .getMessage(), se);
         }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
     }
 
     private String getData(Connection conn, String id, String appId, String key)
@@ -131,10 +180,18 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
         cs.setInt(2, Integer.parseInt(appId));
         cs.setString(3, key);
         ResultSet rs = cs.executeQuery();
+        String value = null;
         if (rs.next()) {
-            return rs.getString("value");
+            value = rs.getString("value");
         }
-        return null;
+        if (CHUNKED_MARKER.equals(value)) {
+        	value = "";
+        	int count = Integer.parseInt(getData(conn, id, appId, key + CHUNKED_COUNT_SUFFIX));
+        	for (int i = 0; i < count; i++) {
+        		value += getData(conn, id, appId, key + "." + i);
+        	}        		
+        }
+        return value;
     }
 
     private void deleteData(Connection conn, String id, String appId, String key)
@@ -153,9 +210,25 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
                 .prepareCall("{ call " + upsert_sp + "(?, ?, ?, ?)}");
         cs.setString(1,id);
         cs.setInt(2, Integer.parseInt(appId));
-        cs.setString(3, key);
-        cs.setString(4, value);
-        cs.execute();
+        if (value.length() > appDataValueLimit) {
+        	// break it into pieces
+            cs.setString(3, key);
+            cs.setString(4, CHUNKED_MARKER);
+            cs.execute();
+            cs.setString(3, key + CHUNKED_COUNT_SUFFIX);
+            cs.setString(4, "" + (((value.length()-1) / appDataValueLimit) + 1));
+            cs.execute();
+            for (int i = 0; i < value.length(); i += appDataValueLimit) {
+                cs.setString(3, key + "." + i);
+                cs.setString(4, value.substring(i, Math.min(i + appDataValueLimit, value.length())));            	
+                cs.execute();
+            }
+        }
+        else {
+	        cs.setString(3, key);
+	        cs.setString(4, value);
+	        cs.execute();
+        }
     }
 
 }

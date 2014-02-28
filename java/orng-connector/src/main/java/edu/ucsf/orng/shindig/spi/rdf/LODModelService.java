@@ -1,51 +1,51 @@
-package edu.ucsf.orng.shindig.spi;
+package edu.ucsf.orng.shindig.spi.rdf;
 
 import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.shindig.auth.SecurityToken;
-import org.json.JSONObject;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.util.FileManager;
 
-import com.github.jsonldjava.core.JSONLD;
-import com.github.jsonldjava.core.Options;
-import com.github.jsonldjava.impl.JenaRDFParser;
-import com.github.jsonldjava.utils.JSONUtils;
+public class LODModelService implements JenaModelService {
 
-public class RdfJsonLDService implements RdfService {
-
-	private static final Logger LOG = Logger.getLogger(RdfJsonLDService.class.getName());
-	
-	private static final String RDFXML = "application/rdf+xml";
+	private static final Logger LOG = Logger.getLogger(LODModelService.class.getName());
 	
 	private String system;
 	private String systemDomain;
 	private String systemBase;
+	private String sessionId;
+	private String viewerId;
+	private boolean showDetails = true;
+	private boolean expand = false;
 	
 	@Inject
-	public RdfJsonLDService(@Named("orng.system") String system, @Named("orng.systemDomain") String systemDomain) {
+	public LODModelService(@Named("orng.system") String system, 
+						  @Named("orng.systemDomain") String systemDomain,
+						  String sessionId, String viewerId) {
 		this.system = system;
 		this.systemDomain = systemDomain;
 		this.systemBase = systemDomain;
 		if (PROFILES.equalsIgnoreCase(system)) {
 			systemBase += "/profile/";
-		}		
-    	JSONLD.registerRDFParser(RDFXML, new JenaRDFParser());
+		}	
+		this.sessionId = sessionId;
+		this.viewerId = viewerId;
 	}
-	
-	public JSONObject getRDF(String uri, String output, String containerSessionId, SecurityToken token) throws Exception {
+
+	public void setProfilesOptions(boolean showDetails, boolean expand) {
+		this.showDetails = showDetails;
+		this.expand = expand;
+	}
 		
+	public Model getModel(String uri) throws Exception {		
 		String url = uri;
-		boolean local = false;
 		// custom way to convert URI to URL in case standard LOD mechanisms will not work
 		if (systemDomain != null && url.toLowerCase().startsWith(systemDomain.toLowerCase())) {
-			local = true;
 			if (VIVO.equalsIgnoreCase(system)) {
 				url += (url.indexOf('?') == -1 ? "?" : "&") + "format=rdfxml";
 			}
@@ -75,31 +75,20 @@ public class RdfJsonLDService implements RdfService {
 				if (!url.toLowerCase().endsWith(".rdf") && url.indexOf('?') == -1) {
 					url = systemDomain + "/Profile/Profile.aspx?Subject=" + nodeId;
 					// add in SessionID so that we can take advantage of Profiles security settings
-					if ("full".equalsIgnoreCase(output)) {
-						url += "&Expand=true&ShowDetails=true";
-					}
-					if (containerSessionId != null)
+					url += "&ShowDetails=" + showDetails + "&Expand=" + expand;
+					if (sessionId != null)
 					{
-						url += "&ContainerSessionID=" + containerSessionId;					
+						url += "&ContainerSessionID=" + sessionId;					
 					}
-					if (token.getViewerId() != null)
+					if (viewerId != null)
 					{
-						url += "&Viewer=" + URLEncoder.encode(token.getViewerId(), "UTF-8");					
+						url += "&Viewer=" + URLEncoder.encode(viewerId, "UTF-8");					
 					}
 				}		
 			}
 		}
     	LOG.log(Level.INFO, "getRDF :" + url );
-        final Options opts = new Options(local ? systemBase : "");
-        opts.format = RDFXML;
-        opts.outputForm = "compacted";  // [compacted|expanded|flattened]
-        Model model = FileManager.get().loadModel(url);
-        Object obj = JSONLD.fromRDF(model, opts);        
-        // simplify
-        obj = JSONLD.simplify(obj, opts);
-        String str = JSONUtils.toString(obj);
-        JSONObject jsonld = new JSONObject(str);
-        // we put the JSON-LD in one item, the requested URI in another        
-        return new JSONObject().put("uri", uri).put("jsonld", jsonld).put("base", opts.base);
+
+    	return FileManager.get().loadModel(url);
 	}
 }

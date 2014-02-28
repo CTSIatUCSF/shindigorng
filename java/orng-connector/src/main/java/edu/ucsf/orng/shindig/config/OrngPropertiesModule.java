@@ -1,5 +1,7 @@
 package edu.ucsf.orng.shindig.config;
 
+import java.net.MalformedURLException;
+
 import org.apache.shindig.auth.SecurityTokenCodec;
 import org.apache.shindig.common.PropertiesModule;
 import org.apache.shindig.config.JsonContainerConfig;
@@ -17,8 +19,8 @@ import edu.ucsf.orng.shindig.spi.OrngPersonService;
 import edu.ucsf.orng.shindig.spi.OrngActivityService;
 import edu.ucsf.orng.shindig.spi.OrngMessageService;
 import edu.ucsf.orng.shindig.spi.OrngAppDataService;
-import edu.ucsf.orng.shindig.spi.RdfJsonLDService;
-import edu.ucsf.orng.shindig.spi.RdfService;
+import edu.ucsf.orng.shindig.spi.rdf.JsonLDService;
+import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
 public class OrngPropertiesModule extends PropertiesModule implements OrngProperties {//SocialApiGuiceModule {
 	
@@ -52,9 +54,25 @@ public class OrngPropertiesModule extends PropertiesModule implements OrngProper
 	    bind(ActivityService.class).to(OrngActivityService.class);
         bind(MessageService.class).to(OrngMessageService.class);
 	    bind(AppDataService.class).to(OrngAppDataService.class);
-	    bind(RdfService.class).to(RdfJsonLDService.class);	    	
+	    bind(RdfService.class).to(JsonLDService.class);	    	
 		bind(PersonService.class).to(OrngPersonService.class);
 
         bind(OAuthDataStore.class).to(SampleOAuthDataStore.class);
 	}
+	
+	
+	// This allows us to host shindigorng on a server with multiple host names (eg. profiles.ucsf.edu, profiles.usc.edu) 
+	@Override
+	protected String getServerHostname() {
+		java.net.URL hostName;
+		try {
+			hostName = new java.net.URL(this.getProperties().getProperty("orng.systemDomain"));
+			return hostName.getHost();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return super.getServerHostname();
+	}
+
 }

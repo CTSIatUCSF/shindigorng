@@ -42,7 +42,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-import edu.ucsf.orng.shindig.spi.RdfService;
+import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
 /**
  * RPC/REST handler for all /people requests

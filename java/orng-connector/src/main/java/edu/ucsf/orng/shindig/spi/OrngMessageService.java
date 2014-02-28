@@ -22,6 +22,7 @@ import org.apache.shindig.social.opensocial.spi.UserId;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import edu.ucsf.orng.shindig.config.OrngProperties;
@@ -31,6 +32,7 @@ import edu.ucsf.orng.shindig.model.OrngMessageCollection;
 /*
  * TODO multi-recipient messages, multi collection messages, delete, groups
  */
+@Singleton
 public class OrngMessageService implements MessageService, OrngProperties {
 
 	private String read_sp;

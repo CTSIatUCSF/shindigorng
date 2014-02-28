@@ -95,8 +95,10 @@ public class GuiceServletContextListener implements ServletContextListener {
    * @param context
    */
   private void setSystemProperties(ServletContext context){
-	// added by UCSF for ORNG, drop the leading '/'
-	System.setProperty(JsonContainerConfig.SHINDIGORNG_PATH, context.getContextPath().substring(1));
+	// added by UCSF for ORNG, drop the leading '/' when present.  The if allows us to run the unit test which deploy on jetty at root
+	if (context.getContextPath().length() > 1) {
+		System.setProperty(JsonContainerConfig.SHINDIGORNG_PATH, context.getContextPath().substring(1));
+	}
     String systemProperties = context.getInitParameter(SYSTEM_PROPERTIES);
     String key=null;
     String value=null;

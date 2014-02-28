@@ -1,4 +1,4 @@
-package edu.ucsf.orng.shindig.spi;
+package edu.ucsf.orng.shindig.spi.rdf;
 
 import org.apache.shindig.auth.SecurityToken;
 import org.json.JSONObject;

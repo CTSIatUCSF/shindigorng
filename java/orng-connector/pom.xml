@@ -50,15 +50,15 @@
       <artifactId>shindig-social-api</artifactId>
     </dependency>
 	<dependency>
-    	<groupId>com.github.jsonld-java</groupId>
-    	<artifactId>jsonld-java</artifactId>
-    	<version>0.2-SNAPSHOT</version>
+		<groupId>com.github.jsonld-java</groupId>
+		<artifactId>jsonld-java</artifactId>
+		<version>0.3</version>
 	</dependency>
 	<dependency>
 		<groupId>com.github.jsonld-java</groupId>
 		<artifactId>jsonld-java-jena</artifactId>
-		<version>0.2-SNAPSHOT</version>
-	</dependency>		
+		<version>0.3</version>
+	</dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-io</artifactId>
@@ -84,6 +84,17 @@
 		<version>5.1.6</version>
     	<type>jar</type>
     	<scope>runtime</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.jena</groupId>
+		<artifactId>apache-jena-libs</artifactId>
+		<version>2.11.1</version>
+		<type>pom</type>
+	</dependency>
+	<dependency>
+		<groupId>joda-time</groupId>
+		<artifactId>joda-time</artifactId>
+		<version>2.3</version>
 	</dependency>
   </dependencies>
 </project>
