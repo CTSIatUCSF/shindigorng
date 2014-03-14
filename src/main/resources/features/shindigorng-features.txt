@@ -20,3 +20,4 @@
 
 features/rdf/feature.xml
 features/orng/feature.xml
+features/start-hidden/feature.xml

@@ -11,3 +11,11 @@ gadgets.orng.getCurrentPageItemsMetadata = function (callback) {
 gadgets.orng.getCurrentPageItems = function (callback) {
 	gadgets.rpc.call('..', 'orng_responder', callback, "currentPageItems");
 };
+
+gadgets.orng.hideGadget = function (callback) {
+	gadgets.rpc.call('..', 'orng_hide_show', callback, "hide");
+};
+
+gadgets.orng.showGadget = function (callback) {
+	gadgets.rpc.call('..', 'orng_hide_show', callback, "show");
+};

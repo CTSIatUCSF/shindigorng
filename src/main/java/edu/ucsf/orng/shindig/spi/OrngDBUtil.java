@@ -23,10 +23,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import edu.ucsf.ctsi.r2r.DBUtil;
 import edu.ucsf.orng.shindig.config.OrngProperties;
 
 @Singleton
-public class OrngDBUtil implements OrngProperties {
+public class OrngDBUtil extends DBUtil implements OrngProperties {
 	
 	private static final Logger LOG = Logger.getLogger(OrngDBUtil.class.getName());		
 
@@ -42,7 +43,8 @@ public class OrngDBUtil implements OrngProperties {
 			@Named("orng.system") String system,
 			@Named("orng.dbURL") String dbUrl,
 			@Named("orng.dbUser") String dbUser,
-			@Named("orng.dbPassword") String dbPassword) {
+			@Named("orng.dbPassword") String dbPassword) throws ClassNotFoundException {
+		super(dbUrl, dbUser, dbPassword);
 		this.apps_table = PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Apps]" : "orng_apps";
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
@@ -153,17 +155,6 @@ public class OrngDBUtil implements OrngProperties {
             ids.addAll(getIdSet(user, group, token));
         }
         return ids;
-    }
-    
-    public Connection getConnection() {
-        try {
-            Connection conn = DriverManager.getConnection(dbUrl, dbUser,
-                    dbPassword);
-            return conn;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
     
     Connection getConnection(boolean create) {

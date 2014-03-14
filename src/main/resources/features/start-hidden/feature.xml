@@ -16,10 +16,12 @@ software distributed under the License is distributed on an
 KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 -->
+<!--
+Applications that include this feature will be hidden by default.  
+They will need to call gadgets.orng.show(); in order by be visible.
+This allows gadgets that are "conditionally on or off" to control their visibility.
+-->
 <feature>
-  <name>orng</name>
-  <dependency>rpc</dependency>
-  <gadget>
-    <script src="gadgets-orng.js"></script>
-  </gadget>
+  <name>start-hidden</name>
+  <dependency>orng</dependency>
 </feature>
