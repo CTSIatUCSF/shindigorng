@@ -30,9 +30,9 @@ import com.github.jsonldjava.core.JsonLdProcessor;
 import com.github.jsonldjava.jena.JenaRDFParser;
 import com.github.jsonldjava.utils.JSONUtils;
 
-import edu.ucsf.ctsi.r2r.jena.DbModelService;
-import edu.ucsf.ctsi.r2r.jena.FusekiResourceCache;
-import edu.ucsf.ctsi.r2r.jena.LODModelService;
+import edu.ucsf.ctsi.r2r.jena.DbService;
+import edu.ucsf.ctsi.r2r.jena.FusekiCache;
+import edu.ucsf.ctsi.r2r.jena.LODService;
 import edu.ucsf.ctsi.r2r.jena.ResourceService;
 import edu.ucsf.orng.shindig.config.OrngProperties;
 import edu.ucsf.orng.shindig.spi.OrngDBUtil;
@@ -43,7 +43,6 @@ public class JsonLDService implements RdfService, OrngProperties {
 	private static final Logger LOG = Logger.getLogger(JsonLDService.class.getName());
 	
 	private static final String RDFXML = "application/rdf+xml";
-	private static final String ANONYMOUS = "ANONYMOUS";
 	
 	private String system;
 	private String systemDomain;
@@ -55,9 +54,9 @@ public class JsonLDService implements RdfService, OrngProperties {
 	
 	@Inject
 	public JsonLDService(@Named("orng.system") String system, @Named("orng.systemDomain") String systemDomain, 
-							  @Named("orng.fuseki") String fusekiUrl, @Named("orng.rdfUser") String orngUser, 
+							  @Named("r2r.fusekiUrl") String fusekiUrl, @Named("orng.rdfUser") String orngUser, 
 							  @Named("orng.rdfFetchIntervalMinutes") String fetchInterval, @Named("orng.rdfEagerRunLimitMinutes") String eagerRunLimit,
-							  @Named("orng.rdfCacheExpireHours") String tdbCacheExpire,
+							  @Named("r2r.rdfCacheExpireHours") String tdbCacheExpire,
 							  OrngDBUtil dbUtil, CacheProvider cacheProvider, HttpFetcher fetcher) throws SQLException {
 		this.system = system;
 		this.systemDomain = systemDomain;
@@ -69,7 +68,7 @@ public class JsonLDService implements RdfService, OrngProperties {
 		// set up the cache
     	this.dbUtil = dbUtil;
     	
-    	userService = new FusekiResourceCache(new ShindigFusekiService(fusekiUrl, fetcher), new DbModelService(systemDomain, orngUser, dbUtil),
+    	userService = new FusekiCache(new ShindigFusekiService(fusekiUrl, fetcher), new DbService(systemDomain, orngUser, dbUtil),
     			tdbCacheExpire);
     	//userService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + orngUser, tdbCacheExpire, new DbModelService(systemDomain, orngUser, dbUtil));
     	//anonymousService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + ANONYMOUS, tdbCacheExpire, new DbModelService(systemDomain, null, dbUtil));
@@ -132,8 +131,7 @@ public class JsonLDService implements RdfService, OrngProperties {
     		}
     		if (resourceOrModel == null) {
     			// this can grab anything, and knows how to directly grab data from a local Profiles
-    			LODModelService service = new LODModelService(systemDomain, sessionId, viewerId);
-    			service.setProfilesOptions(true, expand);    			
+    			LODService service = new LODService(systemDomain, sessionId, viewerId, true, expand);
     			resourceOrModel = service.getModel(uri);
     			// this is the only one worth caching, others are fast enough as is
     			putInCache = true;
