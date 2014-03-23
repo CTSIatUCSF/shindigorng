@@ -1,11 +1,14 @@
 package edu.ucsf.orng.shindig.spi.rdf;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -13,15 +16,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.cache.Cache;
 import org.apache.shindig.common.cache.CacheProvider;
 import org.apache.shindig.gadgets.http.HttpFetcher;
+import org.apache.shindig.protocol.DataCollection;
+import org.apache.shindig.protocol.ProtocolException;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.json.JSONObject;
 
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -48,16 +56,15 @@ public class JsonLDService implements RdfService, OrngProperties {
 	private String systemDomain;
 	private String systemBase;
 	private OrngDBUtil dbUtil;
-	private ResourceService userService;
-	private ResourceService anonymousService;
-	private Cache<String, JSONObject> cache; 
+	private FusekiCache userCache;
+	private FusekiCache anonymousCache;
+	private Cache<String, JSONObject> generalCache; 
 	
 	@Inject
 	public JsonLDService(@Named("orng.system") String system, @Named("orng.systemDomain") String systemDomain, 
 							  @Named("r2r.fusekiUrl") String fusekiUrl, @Named("orng.rdfUser") String orngUser, 
 							  @Named("orng.rdfFetchIntervalMinutes") String fetchInterval, @Named("orng.rdfEagerRunLimitMinutes") String eagerRunLimit,
-							  @Named("r2r.rdfCacheExpireHours") String tdbCacheExpire,
-							  OrngDBUtil dbUtil, CacheProvider cacheProvider, HttpFetcher fetcher) throws SQLException {
+							  OrngDBUtil dbUtil, CacheProvider cacheProvider, HttpFetcher fetcher) throws SQLException, IOException {
 		this.system = system;
 		this.systemDomain = systemDomain;
 		this.systemBase = systemDomain;
@@ -68,13 +75,12 @@ public class JsonLDService implements RdfService, OrngProperties {
 		// set up the cache
     	this.dbUtil = dbUtil;
     	
-    	userService = new FusekiCache(new ShindigFusekiService(fusekiUrl, fetcher), new DbService(systemDomain, orngUser, dbUtil),
-    			tdbCacheExpire);
+    	userCache = new FusekiCache(new ShindigFusekiService(fusekiUrl, fetcher), new DbService(systemDomain, orngUser, dbUtil));
     	//userService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + orngUser, tdbCacheExpire, new DbModelService(systemDomain, orngUser, dbUtil));
     	//anonymousService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + ANONYMOUS, tdbCacheExpire, new DbModelService(systemDomain, null, dbUtil));
     	
     	if (cacheProvider != null) {
-    		cache = cacheProvider.createCache("orngRdf");
+    		generalCache = cacheProvider.createCache("orngRdf");
     	}
     	// pass into some scheduled loader
     	ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {
@@ -84,21 +90,22 @@ public class JsonLDService implements RdfService, OrngProperties {
     		      return thread;
     		   }
     		});
-    	executorService.scheduleAtFixedRate(new EagerFetcher(userService, Integer.parseInt(eagerRunLimit)), 0, Integer.parseInt(fetchInterval), TimeUnit.MINUTES);    	
+    	executorService.scheduleAtFixedRate(new EagerFetcher(userCache, Integer.parseInt(eagerRunLimit)), 0, Integer.parseInt(fetchInterval), TimeUnit.MINUTES);    	
 	}
 	
 	private JSONObject getFromCache(String key) {
-		return cache != null ? cache.getElement(key) : null;
+		return generalCache != null ? generalCache.getElement(key) : null;
 	}
 	
 	private void addToCache(String key, JSONObject value) {
-		if (cache != null) {
-			cache.addElement(key, value);
+		if (generalCache != null) {
+			generalCache.addElement(key, value);
 		}
 	}
 	
 	// maybe have some option to force fresh or allow cache, etc.
-	public JSONObject getRDF(String url, String output, String sessionId, SecurityToken token) throws Exception {		
+	// this sometimes returns RDF and sometimes does not, need to fix!
+	public JSONObject getRDF(String url, String sessionId, SecurityToken token) throws Exception {		
 		String uri = getURI(url);
 		boolean local = false;
 		String viewerId =  token.getViewerId();
@@ -110,33 +117,30 @@ public class JsonLDService implements RdfService, OrngProperties {
 		}
 		
 		// need to think about and fix this
-		boolean expand = "full".equals(output);
 		boolean putInCache = false;
 		
-		String cacheKey = uri + expand + anonymous;
+		String cacheKey = uri + anonymous;
 		JSONObject retval = getFromCache(cacheKey);
 		if (retval != null) {
 			return retval;
 		}
     	Object resourceOrModel = null;
-    	if (resourceOrModel == null) {
-    		// we get non URI's coming into here, need to find a better way to work with those.
-    		if (local && !expand && uri.indexOf('?') == -1) {
-        		if (anonymous) {
-        			resourceOrModel = anonymousService != null ? anonymousService.getResource(uri) : null;
-        		}
-        		else {
-        			resourceOrModel = userService != null ? userService.getResource(uri) : null;        			
-        		}    			
-    		}
-    		if (resourceOrModel == null) {
-    			// this can grab anything, and knows how to directly grab data from a local Profiles
-    			LODService service = new LODService(systemDomain, sessionId, viewerId, true, expand);
-    			resourceOrModel = service.getModel(uri);
-    			// this is the only one worth caching, others are fast enough as is
-    			putInCache = true;
-    		}
-    	}
+		// we get non URI's coming into here, need to find a better way to work with those.
+		if (local && uri.indexOf('?') == -1) {
+			FusekiCache cache = anonymous ? anonymousCache : userCache;
+			if (cache != null) {
+				resourceOrModel = cache.getResource(uri);
+			}
+		}
+		
+		if (resourceOrModel == null) {
+			// this can grab anything, and knows how to directly grab data from a local Profiles
+			LODService service = new LODService(systemDomain, sessionId, viewerId, true, false);
+			resourceOrModel = service.getModel(uri);
+			// this is the only one worth caching, others are fast enough as is
+			putInCache = true;
+		}
+
 		if (resourceOrModel != null) {
 	        final JsonLdOptions opts = new JsonLdOptions(local ? systemBase : "");
 	        opts.format = RDFXML;
@@ -155,6 +159,41 @@ public class JsonLDService implements RdfService, OrngProperties {
 	        return retval;
 		}
     	return null;
+	}
+
+	public DataCollection getData(String url, Set<String> fields, String sessionId, SecurityToken token) throws ProtocolException {		
+		boolean local = false;
+		String viewerId =  token.getViewerId();
+		boolean anonymous = viewerId == null || "-1".equals(viewerId);
+		
+		// custom way to convert URI to URL in case standard LOD mechanisms will not work
+		if (systemDomain != null && url.toLowerCase().startsWith(systemDomain.toLowerCase())) {
+			local = true;
+		}
+		
+		// need to think about and fix this
+        Map<String, Map<String, Object>> idToData = Maps.newHashMap();
+		
+		// we get non URI's coming into here, need to find a better way to work with those.
+		try {
+			String uri = getURI(url);
+			if (local && uri.indexOf('?') == -1) {
+				FusekiCache cache = anonymous ? anonymousCache : userCache;
+				if (cache != null) {
+					// need to clean all this up!
+					Map<String, Object> objs = Maps.newHashMap();
+					Map<String, String> strs;
+					strs = cache.getFields(url, uri, fields);
+					for (String key : strs.keySet()) {
+						objs.put(key, strs.get(key));
+					}
+	                idToData.put(uri, objs);
+				}
+			}
+		} catch (Exception e) {
+			throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
+		}
+		return new DataCollection(idToData);
 	}
 
 	private String getURI(String url) throws UnsupportedEncodingException {
@@ -260,7 +299,7 @@ public class JsonLDService implements RdfService, OrngProperties {
     									"jdbc:sqlserver://stage-sql-ctsi.ucsf.edu;instanceName=default;portNumber=1433;databaseName=profiles_200", 
     									"App_Profiles10", "Password1234");
     		new JsonLDService("Profiles", "http://stage-profiles.ucsf.edu/profiles200", 
-    									"/shindig/Jena/", "025693078", "60", "5", "168", dbUtil, null, null);
+    									"/shindig/Jena/", "025693078", "60", "5", dbUtil, null, null);
     	}
     	catch (Exception e) {
     		e.printStackTrace();

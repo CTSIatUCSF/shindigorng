@@ -44,7 +44,6 @@ gadgets.util.registerOnLoadHandler(function() {
       */
     osapi.rdf.getViewer = function(options) {
       options = options || {};
-      options.output = options.output || "minimal";
       options.containerSessionId = parent.my.containerSessionId; 
       options.userId = '@viewer';
       options.groupId = '@self';
@@ -60,7 +59,6 @@ gadgets.util.registerOnLoadHandler(function() {
       */
     osapi.rdf.getOwner = function(options) {
       options = options || {};
-      options.output = options.output || "minimal";
       options.containerSessionId = parent.my.containerSessionId; 
       options.userId = '@owner';
       options.groupId = '@self';
@@ -72,8 +70,7 @@ gadgets.util.registerOnLoadHandler(function() {
      * @param {String} The uri for the specific request.
      */
     osapi.rdf.getRDF = function(uri, options) {
-        var options = options || {};
-        options.output = options.output || "minimal";
+        options = options || {};
         // for security reasons only send sessionId if going back to host!
         if (uri.indexOf(parent.location.hostname) !== -1) { 
         	options.containerSessionId = parent.my.containerSessionId;
@@ -84,5 +81,18 @@ gadgets.util.registerOnLoadHandler(function() {
         return new osapi.rdf.get(options);
       };
       
+      osapi.rdf.getProperties = function(uri, properties) {
+          var options = {};
+          // for security reasons only send sessionId if going back to host!
+          if (uri.indexOf(parent.location.hostname) !== -1) { 
+          	options.containerSessionId = parent.my.containerSessionId;
+          }
+          options.userId = '@userId';
+          options.groupId = '@self';
+          options.uri = uri;
+          options.fields = properties || {};
+          return new osapi.rdf.get(options);
+        };
+        
   }
 });
