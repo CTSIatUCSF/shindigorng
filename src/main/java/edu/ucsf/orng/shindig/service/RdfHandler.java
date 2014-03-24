@@ -24,7 +24,6 @@ import java.util.concurrent.Future;
 
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.config.ContainerConfig;
-import org.apache.shindig.protocol.DataCollection;
 import org.apache.shindig.protocol.HandlerPreconditions;
 import org.apache.shindig.protocol.Operation;
 import org.apache.shindig.protocol.ProtocolException;
@@ -85,20 +84,10 @@ public class RdfHandler {
 		Set<String> fields = request.getFields();
 
 		if (uris.size() == 1) {
-			if (fields == null || fields.size() == 0) {
-				return getJSONItem(uris.iterator().next(), containerSessionId, request.getToken());
-			}
-			else {
-				return getItem(uris.iterator().next(), fields, containerSessionId, request.getToken());
-			}
+			return getJSONItem(uris.iterator().next(), fields, containerSessionId, request.getToken());
 		} 
 		else {
-			if (fields == null || fields.size() == 0) {
-				return getJSONItems(uris, containerSessionId, groupId, options, request.getToken());
-			}
-			else {
-				return getItems(uris, fields, containerSessionId, groupId, options, request.getToken());
-			}
+			return getJSONItems(uris, fields, containerSessionId, groupId, options, request.getToken());
 		}
 	}
 
@@ -137,7 +126,7 @@ public class RdfHandler {
 	 *            The gadget token @return a list of people.
 	 * @return Future that returns a RestfulCollection of Person
 	 */
-	private Future<RestfulCollection<JSONObject>> getJSONItems(Set<String> uris,
+	private Future<RestfulCollection<JSONObject>> getJSONItems(Set<String> uris, Set<String> fields,
 			String containerSessionId, GroupId groupId,
 			CollectionOptions collectionOptions, SecurityToken token)
 			throws ProtocolException {
@@ -149,7 +138,7 @@ public class RdfHandler {
 		}
 		for (String uri : uris) {
 			try {
-				result.add(rdfService.getRDF(uri, containerSessionId, token));
+				result.add(rdfService.getRDF(uri, fields, containerSessionId, token));
 			} catch (Exception e) {
 				throw new ProtocolException(0, e.getMessage(), e);
 			}
@@ -173,55 +162,13 @@ public class RdfHandler {
 	 *            The gadget token
 	 * @return a list of people.
 	 */
-	private Future<JSONObject> getJSONItem(String uri, String containerSessionId, SecurityToken token)
+	private Future<JSONObject> getJSONItem(String uri, Set<String> fields, String containerSessionId, SecurityToken token)
 			throws ProtocolException {
 		try {
-			return Futures.immediateFuture(rdfService.getRDF(uri, containerSessionId, token));
+			return Futures.immediateFuture(rdfService.getRDF(uri, fields, containerSessionId, token));
 		} catch (Exception e) {
 			throw new ProtocolException(0, e.getMessage(), e);
 		}
 	}
 
-	private Future<RestfulCollection<DataCollection>> getItems(Set<String> uris,
-			Set<String> fields, String containerSessionId, GroupId groupId,
-			CollectionOptions collectionOptions, SecurityToken token)
-			throws ProtocolException {
-		List<DataCollection> result = Lists.newArrayList();
-
-		if (uris.size() == 0) {
-			return Futures.immediateFuture(null);
-		}
-		for (String uri : uris) {
-			try {
-				result.add(rdfService.getData(uri, fields, containerSessionId, token));
-			} catch (Exception e) {
-				throw new ProtocolException(0, e.getMessage(), e);
-			}
-		}
-		int firstResult = 0;
-		if (collectionOptions != null) {
-			firstResult = collectionOptions.getFirst();
-		}
-		return Futures.immediateFuture(new RestfulCollection<DataCollection>(
-				result, firstResult, result.size()));
-	}
-
-	/**
-	 * Returns a JSON object that corresponds to the passed in URI.
-	 * 
-	 * @param id
-	 *            The id of the person to fetch.
-	 * @param fields
-	 *            The fields to fetch.
-	 * @param token
-	 *            The gadget token
-	 * @return a list of people.
-	 */
-	private Future<DataCollection> getItem(String uri, Set<String> fields, String containerSessionId, SecurityToken token)
-			throws ProtocolException {
-		try {
-			return Futures.immediateFuture(rdfService.getData(uri, fields, containerSessionId, token));
-		} catch (Exception e) {
-			throw new ProtocolException(0, e.getMessage(), e);
-		}
-	}}
+}

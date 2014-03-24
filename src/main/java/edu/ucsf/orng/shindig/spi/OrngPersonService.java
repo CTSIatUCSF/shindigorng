@@ -114,7 +114,7 @@ public class OrngPersonService implements PersonService, OrngProperties {
 		try {
 			// There can be only one!
 			if (strId != null) {
-				JSONObject personJSON =  rdfService.getRDF(strId, null, token);
+				JSONObject personJSON =  rdfService.getRDF(strId, null, null, token);
 				personObj = parsePerson(strId, personJSON);
 				cache.addElement(strId, personObj);
 				return Futures.immediateFuture(personObj);

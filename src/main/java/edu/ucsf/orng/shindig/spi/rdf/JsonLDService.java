@@ -105,7 +105,7 @@ public class JsonLDService implements RdfService, OrngProperties {
 	
 	// maybe have some option to force fresh or allow cache, etc.
 	// this sometimes returns RDF and sometimes does not, need to fix!
-	public JSONObject getRDF(String url, String sessionId, SecurityToken token) throws Exception {		
+	public JSONObject getRDF(String url, Set<String> fields, String sessionId, SecurityToken token) throws Exception {		
 		String uri = getURI(url);
 		boolean local = false;
 		String viewerId =  token.getViewerId();
@@ -129,7 +129,12 @@ public class JsonLDService implements RdfService, OrngProperties {
 		if (local && uri.indexOf('?') == -1) {
 			FusekiCache cache = anonymous ? anonymousCache : userCache;
 			if (cache != null) {
-				resourceOrModel = cache.getResource(uri);
+				if (fields == null || fields.size() == 0) {
+					resourceOrModel = cache.getResource(uri);
+				}
+				else {
+					resourceOrModel = cache.getModel(uri, fields);
+				}
 			}
 		}
 		
@@ -159,41 +164,6 @@ public class JsonLDService implements RdfService, OrngProperties {
 	        return retval;
 		}
     	return null;
-	}
-
-	public DataCollection getData(String url, Set<String> fields, String sessionId, SecurityToken token) throws ProtocolException {		
-		boolean local = false;
-		String viewerId =  token.getViewerId();
-		boolean anonymous = viewerId == null || "-1".equals(viewerId);
-		
-		// custom way to convert URI to URL in case standard LOD mechanisms will not work
-		if (systemDomain != null && url.toLowerCase().startsWith(systemDomain.toLowerCase())) {
-			local = true;
-		}
-		
-		// need to think about and fix this
-        Map<String, Map<String, Object>> idToData = Maps.newHashMap();
-		
-		// we get non URI's coming into here, need to find a better way to work with those.
-		try {
-			String uri = getURI(url);
-			if (local && uri.indexOf('?') == -1) {
-				FusekiCache cache = anonymous ? anonymousCache : userCache;
-				if (cache != null) {
-					// need to clean all this up!
-					Map<String, Object> objs = Maps.newHashMap();
-					Map<String, String> strs;
-					strs = cache.getFields(url, uri, fields);
-					for (String key : strs.keySet()) {
-						objs.put(key, strs.get(key));
-					}
-	                idToData.put(uri, objs);
-				}
-			}
-		} catch (Exception e) {
-			throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
-		}
-		return new DataCollection(idToData);
 	}
 
 	private String getURI(String url) throws UnsupportedEncodingException {
