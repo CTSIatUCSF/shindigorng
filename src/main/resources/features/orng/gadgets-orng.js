@@ -4,12 +4,12 @@ gadgets.orng = gadgets.orng || {};
 /**
 * Make an RPC call that the container will pick up
 */
-gadgets.orng.getCurrentPageItemsMetadata = function (callback) {
-	gadgets.rpc.call('..', 'orng_responder', callback, "currentPageItemsMetadata");
+gadgets.orng.getPeopleListMetadata = function (callback) {
+	gadgets.rpc.call('..', 'orng_container_rpc', callback, "REQUEST_PEOPLE_LIST_METADATA");
 };
 
-gadgets.orng.getCurrentPageItems = function (callback) {
-	gadgets.rpc.call('..', 'orng_responder', callback, "currentPageItems");
+gadgets.orng.getPeopleList = function (callback) {
+	gadgets.rpc.call('..', 'orng_container_rpc', callback, "REQUEST_PEOPLE_LIST");
 };
 
 gadgets.orng.hideGadget = function (callback) {

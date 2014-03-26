@@ -11,12 +11,12 @@ import org.apache.shindig.gadgets.http.HttpResponse;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import edu.ucsf.ctsi.r2r.jena.FusekiService;
+import edu.ucsf.ctsi.r2r.jena.FusekiClient;
 
 // make this an interface that can work without httpfetcher
-public class ShindigFusekiService extends FusekiService {
+public class ShindigFusekiClient extends FusekiClient {
 
-	private static final Logger LOG = Logger.getLogger(ShindigFusekiService.class.getName());
+	private static final Logger LOG = Logger.getLogger(ShindigFusekiClient.class.getName());
 	
 	private Uri fusekiPost = Uri.parse("http://localhost:3030/ds/data?default");
 	private Uri fusekiUpdate = Uri.parse("http://localhost:3030/ds/update");
@@ -24,7 +24,7 @@ public class ShindigFusekiService extends FusekiService {
 	
 	
 	@Inject
-	public ShindigFusekiService(@Named("orng.fuseki") String fusekiURL, HttpFetcher fetcher) {
+	public ShindigFusekiClient(@Named("orng.fuseki") String fusekiURL, HttpFetcher fetcher) {
 		super(fusekiURL);
 		this.fusekiPost = Uri.parse(fusekiURL + "/data?default");
 		this.fusekiUpdate = Uri.parse(fusekiURL + "/update");

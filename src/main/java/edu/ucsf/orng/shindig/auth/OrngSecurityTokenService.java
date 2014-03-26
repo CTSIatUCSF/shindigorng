@@ -4,7 +4,6 @@ import static org.apache.shindig.auth.AbstractSecurityToken.Keys.APP_URL;
 import static org.apache.shindig.auth.AbstractSecurityToken.Keys.OWNER;
 import static org.apache.shindig.auth.AbstractSecurityToken.Keys.VIEWER;
 import static org.apache.shindig.auth.AbstractSecurityToken.Keys.CONTAINER;
-import static org.apache.shindig.auth.AnonymousSecurityToken.ANONYMOUS_ID;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,6 +27,8 @@ import org.apache.shindig.auth.SecurityTokenException;
 import org.apache.shindig.common.crypto.BasicBlobCrypter;
 import org.apache.shindig.common.crypto.BlobCrypter;
 import org.apache.shindig.common.crypto.BlobCrypterException;
+import org.apache.shindig.common.servlet.GuiceServletContextListener.CleanupCapable;
+import org.apache.shindig.common.servlet.GuiceServletContextListener.CleanupHandler;
 import org.apache.shindig.config.ContainerConfig;
 
 import com.google.common.collect.Maps;
@@ -36,17 +37,19 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 @Singleton
-public class OrngSecurityTokenService implements Runnable {
+public class OrngSecurityTokenService implements Runnable, CleanupCapable {
 
 	private static final Logger LOG = Logger.getLogger(OrngSecurityTokenService.class.getName());	
 	
 	private SecurityTokenCodec securityTokenCodec;
 	private final int port;
+	private boolean stop = false;
+	
 	
 	Map<String, BlobCrypter> crypters = Maps.newHashMap();
 
 	@Inject
-	public OrngSecurityTokenService(ContainerConfig config, SecurityTokenCodec codec, @Named("orng.tokenservice.port") int port) {
+	public OrngSecurityTokenService(ContainerConfig config, SecurityTokenCodec codec, @Named("orng.tokenservice.port") int port, CleanupHandler cleanup) {
 		this.securityTokenCodec = codec;
 		this.port = port;
 	    for (String container : config.getContainers()) {
@@ -56,6 +59,7 @@ public class OrngSecurityTokenService implements Runnable {
 	        	crypters.put(container, crypter);
 	        }
 	    }		
+	    cleanup.register(this);
 		// start listening for connections
 		Thread thread = new Thread(this);
 		thread.setDaemon(true);
@@ -92,7 +96,7 @@ public class OrngSecurityTokenService implements Runnable {
 		// Here's where everything happens. The select method will
 		// return when any operations registered above have occurred, the
 		// thread has been interrupted, etc.
-		while (true) {
+		while (!stop) {
 			final Socket s = ssc.accept().socket();
 			Thread thread = new Thread(new Runnable() {
 				public void run() {
@@ -151,6 +155,10 @@ public class OrngSecurityTokenService implements Runnable {
 					OWNER.getKey().equals(name) || VIEWER.getKey().equals(name) || APP_URL.getKey().equals(name) ? URLDecoder.decode(value, "UTF-8") : value);
 		}
 		return map;
+	}
+
+	public void cleanup() {
+		stop = true;
 	}
 
 }

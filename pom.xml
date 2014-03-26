@@ -107,5 +107,10 @@
 			<artifactId>r2r</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-fuseki</artifactId>
+			<version>1.0.1</version>
+		</dependency>
 	</dependencies>
 </project>

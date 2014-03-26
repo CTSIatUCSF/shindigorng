@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,20 +15,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.fuseki.server.FusekiConfig;
+import org.apache.jena.fuseki.server.SPARQLServer;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.cache.Cache;
 import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.common.servlet.GuiceServletContextListener.CleanupCapable;
+import org.apache.shindig.common.servlet.GuiceServletContextListener.CleanupHandler;
 import org.apache.shindig.gadgets.http.HttpFetcher;
-import org.apache.shindig.protocol.DataCollection;
-import org.apache.shindig.protocol.ProtocolException;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.json.JSONObject;
 
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -46,7 +44,7 @@ import edu.ucsf.orng.shindig.config.OrngProperties;
 import edu.ucsf.orng.shindig.spi.OrngDBUtil;
 
 @Singleton
-public class JsonLDService implements RdfService, OrngProperties {
+public class JsonLDService implements RdfService, OrngProperties, CleanupCapable {
 
 	private static final Logger LOG = Logger.getLogger(JsonLDService.class.getName());
 	
@@ -56,15 +54,19 @@ public class JsonLDService implements RdfService, OrngProperties {
 	private String systemDomain;
 	private String systemBase;
 	private OrngDBUtil dbUtil;
+	private Cache<String, JSONObject> generalCache;
+	
+	private SPARQLServer fusekiServer;
 	private FusekiCache userCache;
 	private FusekiCache anonymousCache;
-	private Cache<String, JSONObject> generalCache; 
+	private ScheduledExecutorService executorService;
 	
 	@Inject
 	public JsonLDService(@Named("orng.system") String system, @Named("orng.systemDomain") String systemDomain, 
-							  @Named("r2r.fusekiUrl") String fusekiUrl, @Named("orng.rdfUser") String orngUser, 
-							  @Named("orng.rdfFetchIntervalMinutes") String fetchInterval, @Named("orng.rdfEagerRunLimitMinutes") String eagerRunLimit,
-							  OrngDBUtil dbUtil, CacheProvider cacheProvider, HttpFetcher fetcher) throws SQLException, IOException {
+							  @Named("orng.fuseki") String fuseki, @Named("orng.fusekiDBUser") String orngUser, 
+							  @Named("orng.fusekiFetchIntervalMinutes") String fetchInterval, @Named("orng.fusekiEagerRunLimitMinutes") String eagerRunLimit,
+							  OrngDBUtil dbUtil, CacheProvider cacheProvider, HttpFetcher fetcher,
+							  CleanupHandler cleanup) throws SQLException, IOException {
 		this.system = system;
 		this.systemDomain = systemDomain;
 		this.systemBase = systemDomain;
@@ -75,22 +77,37 @@ public class JsonLDService implements RdfService, OrngProperties {
 		// set up the cache
     	this.dbUtil = dbUtil;
     	
-    	userCache = new FusekiCache(new ShindigFusekiService(fusekiUrl, fetcher), new DbService(systemDomain, orngUser, dbUtil));
-    	//userService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + orngUser, tdbCacheExpire, new DbModelService(systemDomain, orngUser, dbUtil));
-    	//anonymousService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + ANONYMOUS, tdbCacheExpire, new DbModelService(systemDomain, null, dbUtil));
-    	
     	if (cacheProvider != null) {
     		generalCache = cacheProvider.createCache("orngRdf");
     	}
-    	// pass into some scheduled loader
-    	ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-    		   public Thread newThread(Runnable runnable) {
-    		      Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-    		      thread.setDaemon(true);
-    		      return thread;
-    		   }
-    		});
-    	executorService.scheduleAtFixedRate(new EagerFetcher(userCache, Integer.parseInt(eagerRunLimit)), 0, Integer.parseInt(fetchInterval), TimeUnit.MINUTES);    	
+    	if (cleanup != null) {
+    		cleanup.register(this);
+    	}
+
+    	if (fuseki != null) {
+    		String fusekiURL = fuseki;
+    		if ("internal".equalsIgnoreCase(fuseki)) {
+    			fusekiURL = "http://localhost:3030/profiles";
+    			fusekiServer = new SPARQLServer(FusekiConfig.configure(JsonLDService.class.getResource("/fuseki-shindigorng.ttl").getFile()));
+    			fusekiServer.start();
+    		}
+	    	
+	    	userCache = new FusekiCache(new ShindigFusekiClient(fusekiURL, fetcher), new DbService(systemDomain, orngUser, dbUtil));
+	    	//userService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + orngUser, tdbCacheExpire, new DbModelService(systemDomain, orngUser, dbUtil));
+	    	//anonymousService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + ANONYMOUS, tdbCacheExpire, new DbModelService(systemDomain, null, dbUtil));
+	    	
+	    	// pass into some scheduled loader
+	    	executorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+	    		   public Thread newThread(Runnable runnable) {
+	    		      Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+	    		      thread.setDaemon(true);
+	    		      return thread;
+	    		   }
+	    		});
+	    	// start with a delay equal to the run limit.  Shindig is busy at startup, so best to wait 
+	    	executorService.scheduleAtFixedRate(new EagerFetcher(userCache, Integer.parseInt(eagerRunLimit)), 
+	    			Integer.parseInt(eagerRunLimit), Integer.parseInt(fetchInterval), TimeUnit.MINUTES);
+	    	}
 	}
 	
 	private JSONObject getFromCache(String key) {
@@ -104,7 +121,6 @@ public class JsonLDService implements RdfService, OrngProperties {
 	}
 	
 	// maybe have some option to force fresh or allow cache, etc.
-	// this sometimes returns RDF and sometimes does not, need to fix!
 	public JSONObject getRDF(String url, Set<String> fields, String sessionId, SecurityToken token) throws Exception {		
 		String uri = getURI(url);
 		boolean local = false;
@@ -220,6 +236,7 @@ public class JsonLDService implements RdfService, OrngProperties {
 		}
 		
 		private synchronized void loadProfileURIs() throws SQLException {
+			LOG.info("Loading ProfileURI's to fetch");
 	        Connection conn = dbUtil.getConnection();        
 			try {
 		        ResultSet rs = conn.createStatement().executeQuery("SELECT nodeId FROM [ORNG.].[vwPerson] WHERE isActive = 1");        
@@ -262,6 +279,15 @@ public class JsonLDService implements RdfService, OrngProperties {
 		}		
 	}
 	
+	public void cleanup() {
+		if (fusekiServer != null) {
+			fusekiServer.stop();
+		}
+		// since this is running in a daemon thread, this really isn't necessary
+		if (executorService != null) {
+			executorService.shutdown();
+		}
+	}
 	
     public static void main(String[] args) {
     	try {
@@ -269,10 +295,11 @@ public class JsonLDService implements RdfService, OrngProperties {
     									"jdbc:sqlserver://stage-sql-ctsi.ucsf.edu;instanceName=default;portNumber=1433;databaseName=profiles_200", 
     									"App_Profiles10", "Password1234");
     		new JsonLDService("Profiles", "http://stage-profiles.ucsf.edu/profiles200", 
-    									"/shindig/Jena/", "025693078", "60", "5", dbUtil, null, null);
+    									"/shindig/Jena/", "025693078", "60", "5", dbUtil, null, null, null);
     	}
     	catch (Exception e) {
     		e.printStackTrace();
     	}
     }
+
 }

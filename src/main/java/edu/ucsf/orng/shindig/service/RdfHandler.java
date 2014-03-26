@@ -41,6 +41,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
