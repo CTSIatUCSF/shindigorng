@@ -4,7 +4,7 @@ import java.net.MalformedURLException;
 
 import org.apache.shindig.common.PropertiesModule;
 
-public class OrngPropertiesModule extends PropertiesModule implements OrngProperties {//SocialApiGuiceModule {
+public class OrngPropertiesModule extends PropertiesModule implements OrngProperties {
 	
 	public OrngPropertiesModule() {
 		super(System.getProperty("shindig.contextroot").length() > 1 ? System.getProperty("shindig.contextroot").substring(1) + ".properties" : "shindigorng.properties");
@@ -33,10 +33,6 @@ public class OrngPropertiesModule extends PropertiesModule implements OrngProper
 		if (!PROFILES.equalsIgnoreCase(orngSystem) && !VIVO.equalsIgnoreCase(orngSystem)) {
 			throw new RuntimeException("orng.system not set properly. Needs to be Profiles or VIVO, is :" + orngSystem);
 		}
-	    
-	    //bind(SecurityTokenCodec.class).to(OrngCrypterSecurityTokenCodec.class);
 	}
-	
-	
 
 }
