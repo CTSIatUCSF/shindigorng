@@ -10,7 +10,7 @@
 	<url>http://maven.apache.org</url>
 
     <properties>
-        <shindig.version>2.5.0-update1</shindig.version>
+        <shindig.version>2.5.1</shindig.version>
         <jsonld.version>0.3</jsonld.version>
     </properties>
 

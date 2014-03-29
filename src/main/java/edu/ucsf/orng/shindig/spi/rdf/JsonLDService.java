@@ -35,6 +35,7 @@ import com.github.jsonldjava.core.JsonLdOptions;
 import com.github.jsonldjava.core.JsonLdProcessor;
 import com.github.jsonldjava.jena.JenaRDFParser;
 import com.github.jsonldjava.utils.JSONUtils;
+import com.hp.hpl.jena.rdf.model.Model;
 
 import edu.ucsf.ctsi.r2r.jena.DbService;
 import edu.ucsf.ctsi.r2r.jena.FusekiCache;
@@ -121,7 +122,7 @@ public class JsonLDService implements RdfService, OrngProperties, CleanupCapable
 	}
 	
 	// maybe have some option to force fresh or allow cache, etc.
-	public JSONObject getRDF(String url, Set<String> fields, String sessionId, SecurityToken token) throws Exception {		
+	public JSONObject getRDF(String url, boolean nocache, Set<String> fields, String sessionId, SecurityToken token) throws Exception {		
 		String uri = getURI(url);
 		boolean local = false;
 		String viewerId =  token.getViewerId();
@@ -140,34 +141,29 @@ public class JsonLDService implements RdfService, OrngProperties, CleanupCapable
 		if (retval != null) {
 			return retval;
 		}
-    	Object resourceOrModel = null;
+    	Model model = null;
 		// we get non URI's coming into here, need to find a better way to work with those.
-		if (local && uri.indexOf('?') == -1) {
+		if (local && uri.indexOf('?') == -1 && !nocache) {
 			FusekiCache cache = anonymous ? anonymousCache : userCache;
 			if (cache != null) {
-				if (fields == null || fields.size() == 0) {
-					resourceOrModel = cache.getResource(uri);
-				}
-				else {
-					resourceOrModel = cache.getModel(uri, fields);
-				}
+				model = (fields == null || fields.size() == 0) ? cache.getModel(uri) : cache.getModel(uri, fields);
 			}
 		}
 		
-		if (resourceOrModel == null) {
+		if (model == null) {
 			// this can grab anything, and knows how to directly grab data from a local Profiles
 			LODService service = new LODService(systemDomain, sessionId, viewerId, true, false);
-			resourceOrModel = service.getModel(uri);
+			model = service.getModel(uri);
 			// this is the only one worth caching, others are fast enough as is
 			putInCache = true;
 		}
 
-		if (resourceOrModel != null) {
+		if (model != null) {
 	        final JsonLdOptions opts = new JsonLdOptions(local ? systemBase : "");
 	        opts.format = RDFXML;
 	        opts.outputForm = "compacted";
 	    	// do we need to simplify?
-	    	Object obj = JsonLdProcessor.fromRDF(resourceOrModel, opts); 
+	    	Object obj = JsonLdProcessor.fromRDF(model, opts); 
 	        // simplify
 //    	        obj = JSONLD.simplify(obj, opts);
 	        String str = JSONUtils.toString(obj);
@@ -291,9 +287,9 @@ public class JsonLDService implements RdfService, OrngProperties, CleanupCapable
 	
     public static void main(String[] args) {
     	try {
-    		OrngDBUtil dbUtil = new OrngDBUtil("Profiles", 
+    		OrngDBUtil dbUtil = new OrngDBUtil("Profiles", "com.microsoft.sqlserver.jdbc.SQLServerDriver",
     									"jdbc:sqlserver://stage-sql-ctsi.ucsf.edu;instanceName=default;portNumber=1433;databaseName=profiles_200", 
-    									"App_Profiles10", "Password1234");
+    									"App_Profiles10", "Password1234", null);
     		new JsonLDService("Profiles", "http://stage-profiles.ucsf.edu/profiles200", 
     									"/shindig/Jena/", "025693078", "60", "5", dbUtil, null, null, null);
     	}

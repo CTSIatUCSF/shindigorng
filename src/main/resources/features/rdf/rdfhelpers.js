@@ -21,7 +21,8 @@
  * Called in onLoad handler as osapi.rdf.get could be defined by
  * the container over the gadgets.rpc transport.
  * 
- * Options for output are "minimal" or "full", default is "minimal"
+ * The default behavior is to allow for cached data to be returned.
+ * You can change this by setting options.nocache = 'true'
  */
 gadgets.util.registerOnLoadHandler(function() {
 
@@ -81,10 +82,28 @@ gadgets.util.registerOnLoadHandler(function() {
         return new osapi.rdf.get(options);
       };
       
-      osapi.rdf.getProperties = function(uri, properties) {
-          var options = {};
+      osapi.rdf.getOwnerProperties = function(properties, options) {
+          options = options || {};
+          options.containerSessionId = parent.my.containerSessionId; 
+          options.userId = '@owner';
+          options.groupId = '@self';
+          options.fields = properties || {};
+          return new osapi.rdf.get(options);
+      };
+      
+      osapi.rdf.getViewerProperties = function(properties, options) {
+          options = options || {};
+          options.containerSessionId = parent.my.containerSessionId; 
+          options.userId = '@viewer';
+          options.groupId = '@self';
+          options.fields = properties || {};
+          return new osapi.rdf.get(options);
+      };
+
+      osapi.rdf.getProperties = function(uri, properties, options) {
+          options = options || {};
           // for security reasons only send sessionId if going back to host!
-          if (uri.indexOf(parent.location.hostname) !== -1) { 
+          if (uri && uri.indexOf(parent.location.hostname) !== -1) { 
           	options.containerSessionId = parent.my.containerSessionId;
           }
           options.userId = '@userId';

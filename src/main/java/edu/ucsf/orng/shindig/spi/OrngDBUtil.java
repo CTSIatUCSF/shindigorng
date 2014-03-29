@@ -1,10 +1,12 @@
 package edu.ucsf.orng.shindig.spi;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -14,6 +16,8 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.common.servlet.GuiceServletContextListener.CleanupCapable;
+import org.apache.shindig.common.servlet.GuiceServletContextListener.CleanupHandler;
 import org.apache.shindig.social.opensocial.spi.GroupId;
 import org.apache.shindig.social.opensocial.spi.UserId;
 
@@ -27,7 +31,7 @@ import edu.ucsf.ctsi.r2r.DBUtil;
 import edu.ucsf.orng.shindig.config.OrngProperties;
 
 @Singleton
-public class OrngDBUtil extends DBUtil implements OrngProperties {
+public class OrngDBUtil extends DBUtil implements OrngProperties, CleanupCapable {
 	
 	private static final Logger LOG = Logger.getLogger(OrngDBUtil.class.getName());		
 
@@ -41,10 +45,19 @@ public class OrngDBUtil extends DBUtil implements OrngProperties {
 	@Inject
 	public OrngDBUtil(
 			@Named("orng.system") String system,
+			@Named("orng.dbDriver") String dbDriver,
 			@Named("orng.dbURL") String dbUrl,
 			@Named("orng.dbUser") String dbUser,
-			@Named("orng.dbPassword") String dbPassword) throws ClassNotFoundException {
+			@Named("orng.dbPassword") String dbPassword,
+			CleanupHandler cleanup) throws ClassNotFoundException {
 		super(dbUrl, dbUser, dbPassword);
+
+		// load the DB Driver
+		Class.forName(dbDriver);
+		if (cleanup != null) {
+			cleanup.register(this);
+		}
+
 		this.apps_table = PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Apps]" : "orng_apps";
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
@@ -68,7 +81,7 @@ public class OrngDBUtil extends DBUtil implements OrngProperties {
 		}
 	}
 	
-	String getAppId(String url) {
+	public String getAppId(String url) {
 		// first look for match, if none found look for match based on name alone
 		// if none found look up in db, if still none found then add a random one
 		if (url == null) {
@@ -141,6 +154,8 @@ public class OrngDBUtil extends DBUtil implements OrngProperties {
         case self:
             returnVal.add(userId);
             break;
+		default:
+			break;
         }
         return returnVal;
     }
@@ -157,7 +172,7 @@ public class OrngDBUtil extends DBUtil implements OrngProperties {
         return ids;
     }
     
-    Connection getConnection(boolean create) {
+    public Connection getConnection(boolean create) {
         try {
             Properties props = new Properties();
             props.put("user", dbUser);
@@ -170,6 +185,21 @@ public class OrngDBUtil extends DBUtil implements OrngProperties {
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+	public void cleanup() {
+        // This manually deregisters JDBC driver, which prevents Tomcat 7 from complaining about memory leaks wrto this class
+        Enumeration<Driver> drivers = DriverManager.getDrivers();
+        while (drivers.hasMoreElements()) {
+            Driver driver = drivers.nextElement();
+            try {
+                DriverManager.deregisterDriver(driver);
+                LOG.log(Level.INFO, String.format("deregistering jdbc driver: %s", driver));
+            } catch (SQLException e) {
+                LOG.log(Level.SEVERE, String.format("Error deregistering driver %s", driver), e);
+            }
+
         }
     }
        

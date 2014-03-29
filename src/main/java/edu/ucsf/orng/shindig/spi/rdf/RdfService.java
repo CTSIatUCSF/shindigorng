@@ -9,6 +9,6 @@ import edu.ucsf.orng.shindig.config.OrngProperties;
 
 public interface RdfService extends OrngProperties {
 
-	JSONObject getRDF(String uri, Set<String> fields, String containerSessionId, SecurityToken token) throws Exception;
+	JSONObject getRDF(String uri, boolean nocache, Set<String> fields, String containerSessionId, SecurityToken token) throws Exception;
 
 }

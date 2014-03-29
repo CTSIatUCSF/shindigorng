@@ -72,6 +72,7 @@ public class RdfHandler {
 		Set<String> optionalURI = ImmutableSet.copyOf(request
 				.getListParameter("uri"));
 		String containerSessionId = request.getParameter("containerSessionId");
+		boolean nocache = "true".equalsIgnoreCase(request.getParameter("nocache"));
 
 		Set<String> uris = new HashSet<String>();
 		uris.addAll(makeIdsIntoURIs(request.getUsers(), request.getToken()));
@@ -85,10 +86,10 @@ public class RdfHandler {
 		Set<String> fields = request.getFields();
 
 		if (uris.size() == 1) {
-			return getJSONItem(uris.iterator().next(), fields, containerSessionId, request.getToken());
+			return getJSONItem(uris.iterator().next(), nocache, fields, containerSessionId, request.getToken());
 		} 
 		else {
-			return getJSONItems(uris, fields, containerSessionId, groupId, options, request.getToken());
+			return getJSONItems(uris, nocache, fields, containerSessionId, groupId, options, request.getToken());
 		}
 	}
 
@@ -127,7 +128,7 @@ public class RdfHandler {
 	 *            The gadget token @return a list of people.
 	 * @return Future that returns a RestfulCollection of Person
 	 */
-	private Future<RestfulCollection<JSONObject>> getJSONItems(Set<String> uris, Set<String> fields,
+	private Future<RestfulCollection<JSONObject>> getJSONItems(Set<String> uris, boolean nocache, Set<String> fields,
 			String containerSessionId, GroupId groupId,
 			CollectionOptions collectionOptions, SecurityToken token)
 			throws ProtocolException {
@@ -139,7 +140,7 @@ public class RdfHandler {
 		}
 		for (String uri : uris) {
 			try {
-				result.add(rdfService.getRDF(uri, fields, containerSessionId, token));
+				result.add(rdfService.getRDF(uri, nocache, fields, containerSessionId, token));
 			} catch (Exception e) {
 				throw new ProtocolException(0, e.getMessage(), e);
 			}
@@ -163,10 +164,10 @@ public class RdfHandler {
 	 *            The gadget token
 	 * @return a list of people.
 	 */
-	private Future<JSONObject> getJSONItem(String uri, Set<String> fields, String containerSessionId, SecurityToken token)
+	private Future<JSONObject> getJSONItem(String uri, boolean nocache, Set<String> fields, String containerSessionId, SecurityToken token)
 			throws ProtocolException {
 		try {
-			return Futures.immediateFuture(rdfService.getRDF(uri, fields, containerSessionId, token));
+			return Futures.immediateFuture(rdfService.getRDF(uri, nocache, fields, containerSessionId, token));
 		} catch (Exception e) {
 			throw new ProtocolException(0, e.getMessage(), e);
 		}

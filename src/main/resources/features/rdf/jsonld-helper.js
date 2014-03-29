@@ -5,7 +5,49 @@ var jsonldHelper = {};
 /**
 * Function to rebuild references in the graph and return the item originally requested.
 */
-jsonldHelper.getItem = function (data) {
+
+
+/*
+ * Returns an array of URI's
+ */
+jsonldHelper.getObjectUris = function(data, property) {
+	var subject = jsonldHelper.getSubject(data);
+	var objects = subject[property];
+	var retval = [];
+	if (objects instanceof Array) {
+		for (var i = 0; i < objects.length; i++) {
+			retval[i] = data.base + objects[i]['@id'];
+		}
+	}
+	else if (objects) {
+		retval[0] = data.base + objects['@id'];
+	}
+	return retval;
+};
+
+/*
+ * Returns a map of all the subjects, keyed by their URI
+ */
+jsonldHelper.getSubjects = function(data) {
+	var retval = {};
+	if (data.list instanceof Array) {
+		for (var i = 0; i < data.list.length; i++) {
+			retval[data.list[i].uri] = jsonldHelper.getSubject(data.list[i]);			
+		}
+	}
+	else if (data.list) {
+		retval[data.list[0].uri] = jsonldHelper.getSubject(data.list[0]);					
+	}
+	else if (data) {
+		retval[data.uri] = jsonldHelper.getSubject(data);
+	}
+	return retval;
+};
+
+/*
+ * Returns the object specified by data.uri
+ */
+jsonldHelper.getSubject = function(data) {
     var jsonld = data.jsonld;
     var map = {};
     if (!jsonld.hasOwnProperty('@graph')) {
