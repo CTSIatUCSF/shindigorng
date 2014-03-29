@@ -68,17 +68,17 @@ gadgets.util.registerOnLoadHandler(function() {
 
     /**
      * Function to get any RDF converted to JSON
-     * @param {String} The uri for the specific request.
+     * @param {String} The url for the specific request.
      */
-    osapi.rdf.getRDF = function(uri, options) {
+    osapi.rdf.getRDF = function(url, options) {
         options = options || {};
         // for security reasons only send sessionId if going back to host!
-        if (uri.indexOf(parent.location.hostname) !== -1) { 
+        if (url.indexOf(parent.location.hostname) !== -1) { 
         	options.containerSessionId = parent.my.containerSessionId;
         }
         options.userId = '@userId';
         options.groupId = '@self';
-        options.uri = uri;
+        options.url = url;
         return new osapi.rdf.get(options);
       };
       
@@ -100,15 +100,15 @@ gadgets.util.registerOnLoadHandler(function() {
           return new osapi.rdf.get(options);
       };
 
-      osapi.rdf.getProperties = function(uri, properties, options) {
+      osapi.rdf.getProperties = function(url, properties, options) {
           options = options || {};
           // for security reasons only send sessionId if going back to host!
-          if (uri && uri.indexOf(parent.location.hostname) !== -1) { 
+          if (url && url.indexOf(parent.location.hostname) !== -1) { 
           	options.containerSessionId = parent.my.containerSessionId;
           }
           options.userId = '@userId';
           options.groupId = '@self';
-          options.uri = uri;
+          options.url = url;
           options.fields = properties || {};
           return new osapi.rdf.get(options);
         };
@@ -118,8 +118,16 @@ gadgets.util.registerOnLoadHandler(function() {
          */
         osapi.rdf.parse = function(data) {
             var jsonld = data.jsonld;
-            var fatObjMap = {};
+
+            var retval = {};
+            // when this happens, just return the jsonld as the only entry
+            if (!jsonld.hasOwnProperty('@graph')) {
+                retval[data.uris[0]] = jsonld;
+                return retval;
+            }
+            
             // put everything in a map keyed by ID
+            var fatObjMap = {};
             for (var i = 0; i < jsonld['@graph'].length; i++) {
                 var item = jsonld['@graph'][i];
                 fatObjMap[item['@id']] = item;
@@ -150,7 +158,6 @@ gadgets.util.registerOnLoadHandler(function() {
             
             // there are many items in the fatObjMap all wired together, return the ones they 
             // specifically asked for aka. data.uris in a map keyed by uri 
-            var retval = {};
     	    for (var i = 0; i < data.uris.length; i++) {
     	    	var uri = data.uris[i];
     		    retval[uri] = fatObjMap[uri];

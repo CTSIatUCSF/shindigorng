@@ -22,10 +22,8 @@ specific language governing permissions and limitations under the License.
   <dependency>osapi</dependency>
   <gadget>
     <script src="rdfhelpers.js"></script>
-    <script src="jsonld-helper.js"></script>
   </gadget>
   <container>
     <script src="rdfhelpers.js"></script>
-    <script src="jsonld-helper.js"></script>
   </container>
 </feature>

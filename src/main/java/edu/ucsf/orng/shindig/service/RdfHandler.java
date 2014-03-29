@@ -39,6 +39,7 @@ import org.json.JSONObject;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -46,6 +47,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.ucsf.orng.shindig.config.OrngProperties;
 import edu.ucsf.orng.shindig.spi.rdf.JsonLDService;
+import edu.ucsf.orng.shindig.spi.rdf.RdfItem;
 import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
 /**
@@ -74,24 +76,24 @@ public class RdfHandler implements OrngProperties {
 	@Operation(httpMethods = "GET")
 	public Future<?> get(SocialRequestItem request) throws ProtocolException {
 		GroupId groupId = request.getGroup();
-		Set<String> optionalURI = ImmutableSet.copyOf(request
-				.getListParameter("uri"));
+		Set<String> optionalURLs = ImmutableSet.copyOf(request
+				.getListParameter("url"));
 		String containerSessionId = request.getParameter("containerSessionId");
 		boolean nocache = "true".equalsIgnoreCase(request.getParameter("nocache"));
 		String output = request.getParameter("output");
 
-		Set<String> uris = new HashSet<String>();
-		uris.addAll(makeIdsIntoURIs(request.getUsers(), request.getToken()));
-		uris.addAll(optionalURI);
+		Set<String> urls = Sets.newLinkedHashSet();
+		urls.addAll(makeIdsIntoURLs(request.getUsers(), request.getToken()));
+		urls.addAll(optionalURLs);
 
 		// Preconditions
-		HandlerPreconditions.requireNotEmpty(uris, "No URI's specified");
+		HandlerPreconditions.requireNotEmpty(urls, "No URL's specified");
 
 		CollectionOptions options = new CollectionOptions(request);
 
 		Set<String> fields = request.getFields();
 
-		return getJSONItems(uris, nocache, output, fields, containerSessionId, groupId, options, request.getToken());
+		return getJSONItems(urls, nocache, output, fields, containerSessionId, groupId, options, request.getToken());
 	}
 
 	@Operation(httpMethods = "GET", path = "/@supportedOntologies")
@@ -103,7 +105,7 @@ public class RdfHandler implements OrngProperties {
 				"${Cur['gadgets.features'].opensocial.supportedOntologies}");
 	}
 
-	public Set<String> makeIdsIntoURIs(Set<UserId> userIds, SecurityToken token) {
+	public Set<String> makeIdsIntoURLs(Set<UserId> userIds, SecurityToken token) {
 		Set<String> urls = new HashSet<String>();
 		for (UserId id : userIds) {
 			String strId = id.getUserId(token);
@@ -129,15 +131,18 @@ public class RdfHandler implements OrngProperties {
 	 *            The gadget token @return a list of people.
 	 * @return Future that returns a RestfulCollection of Person
 	 */
-	private Future<JSONObject> getJSONItems(Set<String> uris, boolean nocache, String output, Set<String> fields,
+	private Future<JSONObject> getJSONItems(Set<String> urls, boolean nocache, String output, Set<String> fields,
 			String containerSessionId, GroupId groupId,
 			CollectionOptions collectionOptions, SecurityToken token)
 			throws ProtocolException {
 		// find a way to add in the namespaces
 		Model model = ModelFactory.createDefaultModel();
 		try {
-			for (String uri : uris) {
-				model.add(rdfService.getRDF(uri, nocache, output, fields, containerSessionId, token));
+			Set<String> uris = Sets.newLinkedHashSet();
+			for (String url : urls) {
+				RdfItem item = rdfService.getRDF(url, nocache, "full".equalsIgnoreCase(output), fields, containerSessionId, token);
+				model.add(item.getModel());
+				uris.add(item.getRequestedUri());
 			}
 			JSONObject jsonld = jsonldService.getJSONObject(model);
 			// add the URI's

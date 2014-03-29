@@ -117,7 +117,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
 	}
 	
 	// maybe have some option to force fresh or allow cache, etc.
-	public Model getRDF(String url, boolean nocache, String output, Set<String> fields, String sessionId, SecurityToken token) throws Exception {		
+	public RdfItem getRDF(String url, boolean nocache, boolean expand, Set<String> fields, String sessionId, SecurityToken token) throws Exception {		
 		String uri = getURI(url);
 		boolean local = false;
 		String viewerId =  token.getViewerId();
@@ -126,15 +126,19 @@ public class RdfService implements OrngProperties, CleanupCapable {
 		// custom way to convert URI to URL in case standard LOD mechanisms will not work
 		if (systemDomain != null && url.toLowerCase().startsWith(systemDomain.toLowerCase())) {
 			local = true;
+			// not sure where this logic belongs, but this seems as good as any
+			if (SYS_PROFILES.equalsIgnoreCase(system)) {
+				expand |= url.contains("ShowDetails=true");
+			}
 		}
 		
-		String cacheKey = uri + anonymous + output;
+		String cacheKey = uri + anonymous + expand;
 		Model model = getFromCache(cacheKey);
 		if (model != null) {
-			return model;
+			return new RdfItem(model, uri);
 		}
 		// we get non URI's coming into here, need to find a better way to work with those.
-		if (local && uri.indexOf('?') == -1 && !nocache && !"full".equalsIgnoreCase(output)) {
+		if (local && uri.indexOf('?') == -1 && !nocache && !expand) {
 			FusekiCache cache = anonymous ? anonymousCache : userCache;
 			if (cache != null) {
 				model = (fields == null || fields.size() == 0) ? cache.getModel(uri) : cache.getModel(uri, fields);
@@ -143,14 +147,14 @@ public class RdfService implements OrngProperties, CleanupCapable {
 		
 		if (model == null) {
 			// this can grab anything, and knows how to directly grab data from a local Profiles
-			LODService service = new LODService(systemDomain, sessionId, viewerId, true, "full".equalsIgnoreCase(output));
+			LODService service = new LODService(systemDomain, sessionId, viewerId, true, expand);
 			model = service.getModel(uri);
 			// this is the only one worth caching, others are fast enough as is
 			if (model != null) {
 	        	addToCache(cacheKey, model);
 			}
 		}
-		return model;
+		return new RdfItem(model, uri);
 
 	}
 	

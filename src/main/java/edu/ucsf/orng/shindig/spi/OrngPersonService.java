@@ -121,7 +121,7 @@ public class OrngPersonService implements PersonService, OrngProperties, R2RCons
 		try {
 			// There can be only one!
 			if (strId != null) {				
-				JSONObject personJSON = jsonldService.getJSONObject(rdfService.getRDF(strId, false, null, null, null, token));
+				JSONObject personJSON = jsonldService.getJSONObject(rdfService.getRDF(strId, false, false, null, null, token).getModel());
 				personObj = parsePerson(strId, personJSON);
 				cache.addElement(strId, personObj);
 				return Futures.immediateFuture(personObj);
