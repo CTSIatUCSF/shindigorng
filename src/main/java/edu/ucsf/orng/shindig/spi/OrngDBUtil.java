@@ -58,7 +58,7 @@ public class OrngDBUtil extends DBUtil implements OrngProperties, CleanupCapable
 			cleanup.register(this);
 		}
 
-		this.apps_table = PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Apps]" : "orng_apps";
+		this.apps_table = SYS_PROFILES.equalsIgnoreCase(system) ? "[ORNG.].[Apps]" : "orng_apps";
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;

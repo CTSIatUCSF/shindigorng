@@ -49,7 +49,7 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
 			@Named("orng.system") String system, @Named("orng.appDataValueLimit") String appDataValueLimit, 
 					OrngDBUtil dbUtil, CacheProvider cacheProvider)
 			throws Exception {
-		if (PROFILES.equalsIgnoreCase(system)) {
+		if (SYS_PROFILES.equalsIgnoreCase(system)) {
 			this.read_sp = "[ORNG.].[ReadAppData]";
 			this.delete_sp = "[ORNG.].[DeleteAppData]";
 			this.upsert_sp = "[ORNG.].[UpsertAppData]";

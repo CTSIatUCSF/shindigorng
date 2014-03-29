@@ -60,7 +60,7 @@ public class OrngActivityService implements ActivityService, OrngProperties {
 			@Named("shindig.bean.converter.xml") BeanConverter converter, OrngDBUtil dbUtil)
 			throws Exception {
 		this.converter = converter;
-		if (PROFILES.equalsIgnoreCase(system)) {
+		if (SYS_PROFILES.equalsIgnoreCase(system)) {
 			this.read_sp = "[ORNG.].[ReadActivity]";
 			this.readAll_sp = "[ORNG.].[ReadAllActivities]";
 			this.delete_sp = "[ORNG.].[DeleteActivity]";

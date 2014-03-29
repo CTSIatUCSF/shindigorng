@@ -44,7 +44,7 @@ public class OrngMessageService implements MessageService, OrngProperties {
 	public OrngMessageService(
 			@Named("orng.system") String system, OrngDBUtil dbUtil)
 			throws Exception {
-		if (PROFILES.equalsIgnoreCase(system)) {
+		if (SYS_PROFILES.equalsIgnoreCase(system)) {
 			this.read_sp = "[ORNG.].[ReadMessages]";
 			this.readCollections_sp = "[ORNG.].[ReadMessageCollections]";
 			this.insert_sp = "[ORNG.].[InsertMessage]";

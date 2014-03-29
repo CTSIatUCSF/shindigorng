@@ -4,7 +4,6 @@ import java.util.Set;
 
 import org.apache.shindig.social.core.config.SocialApiGuiceModule;
 import org.apache.shindig.social.core.oauth2.OAuth2DataService;
-import org.apache.shindig.social.core.oauth2.OAuth2DataServiceImpl;
 import org.apache.shindig.social.core.oauth2.OAuth2Service;
 import org.apache.shindig.social.core.oauth2.OAuth2ServiceImpl;
 import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
@@ -38,11 +37,12 @@ public class OrngSocialApiGuiceModule extends SocialApiGuiceModule {
 		bind(MessageService.class).to(OrngMessageService.class);
 		bind(AppDataService.class).to(OrngAppDataService.class);
 		bind(PersonService.class).to(OrngPersonService.class);
-		bind(RdfService.class).to(JsonLDService.class);
 		bind(OAuthDataStore.class).to(OrngOAuthSupport.class);
 		bind(OAuth2Service.class).to(OAuth2ServiceImpl.class);
 		bind(OAuth2DataService.class).to(OrngOAuthSupport.class);
-		
+
+		bind(RdfService.class);
+		bind(JsonLDService.class);		
 		bind(OrngSecurityTokenService.class);
 	}
 

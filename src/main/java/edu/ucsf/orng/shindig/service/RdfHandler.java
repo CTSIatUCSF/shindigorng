@@ -22,13 +22,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.protocol.HandlerPreconditions;
 import org.apache.shindig.protocol.Operation;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RequestItem;
-import org.apache.shindig.protocol.RestfulCollection;
 import org.apache.shindig.protocol.Service;
 import org.apache.shindig.social.opensocial.service.SocialRequestItem;
 import org.apache.shindig.social.opensocial.spi.CollectionOptions;
@@ -38,25 +39,29 @@ import org.json.JSONObject;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+import edu.ucsf.orng.shindig.config.OrngProperties;
+import edu.ucsf.orng.shindig.spi.rdf.JsonLDService;
 import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
 /**
  * RPC/REST handler for all /people requests
  */
 @Service(name = "rdf", path = "/{userId}+/{groupId}/{personId}+")
-public class RdfHandler {
+public class RdfHandler implements OrngProperties {
 
 	private final RdfService rdfService;
+	private final JsonLDService jsonldService;
 	private final ContainerConfig config;
-
+	
 	@Inject
-	public RdfHandler(RdfService rdfService, ContainerConfig config) {
+	public RdfHandler(RdfService rdfService, JsonLDService jsonldService, ContainerConfig config) {
 		this.rdfService = rdfService;
+		this.jsonldService = jsonldService;
 		this.config = config;
 	}
 
@@ -73,6 +78,7 @@ public class RdfHandler {
 				.getListParameter("uri"));
 		String containerSessionId = request.getParameter("containerSessionId");
 		boolean nocache = "true".equalsIgnoreCase(request.getParameter("nocache"));
+		String output = request.getParameter("output");
 
 		Set<String> uris = new HashSet<String>();
 		uris.addAll(makeIdsIntoURIs(request.getUsers(), request.getToken()));
@@ -85,12 +91,7 @@ public class RdfHandler {
 
 		Set<String> fields = request.getFields();
 
-		if (uris.size() == 1) {
-			return getJSONItem(uris.iterator().next(), nocache, fields, containerSessionId, request.getToken());
-		} 
-		else {
-			return getJSONItems(uris, nocache, fields, containerSessionId, groupId, options, request.getToken());
-		}
+		return getJSONItems(uris, nocache, output, fields, containerSessionId, groupId, options, request.getToken());
 	}
 
 	@Operation(httpMethods = "GET", path = "/@supportedOntologies")
@@ -128,49 +129,25 @@ public class RdfHandler {
 	 *            The gadget token @return a list of people.
 	 * @return Future that returns a RestfulCollection of Person
 	 */
-	private Future<RestfulCollection<JSONObject>> getJSONItems(Set<String> uris, boolean nocache, Set<String> fields,
+	private Future<JSONObject> getJSONItems(Set<String> uris, boolean nocache, String output, Set<String> fields,
 			String containerSessionId, GroupId groupId,
 			CollectionOptions collectionOptions, SecurityToken token)
 			throws ProtocolException {
-		// TODO Auto-generated method stub
-		List<JSONObject> result = Lists.newArrayList();
-
-		if (uris.size() == 0) {
-			return Futures.immediateFuture(null);
-		}
-		for (String uri : uris) {
-			try {
-				result.add(rdfService.getRDF(uri, nocache, fields, containerSessionId, token));
-			} catch (Exception e) {
-				throw new ProtocolException(0, e.getMessage(), e);
-			}
-		}
-		int firstResult = 0;
-		if (collectionOptions != null) {
-			firstResult = collectionOptions.getFirst();
-		}
-		return Futures.immediateFuture(new RestfulCollection<JSONObject>(
-				result, firstResult, result.size()));
-	}
-
-	/**
-	 * Returns a JSON object that corresponds to the passed in URI.
-	 * 
-	 * @param id
-	 *            The id of the person to fetch.
-	 * @param fields
-	 *            The fields to fetch.
-	 * @param token
-	 *            The gadget token
-	 * @return a list of people.
-	 */
-	private Future<JSONObject> getJSONItem(String uri, boolean nocache, Set<String> fields, String containerSessionId, SecurityToken token)
-			throws ProtocolException {
+		// find a way to add in the namespaces
+		Model model = ModelFactory.createDefaultModel();
 		try {
-			return Futures.immediateFuture(rdfService.getRDF(uri, nocache, fields, containerSessionId, token));
-		} catch (Exception e) {
-			throw new ProtocolException(0, e.getMessage(), e);
-		}
+			for (String uri : uris) {
+				model.add(rdfService.getRDF(uri, nocache, output, fields, containerSessionId, token));
+			}
+			JSONObject jsonld = jsonldService.getJSONObject(model);
+			// add the URI's
+			JSONObject retval = new JSONObject().put("jsonld", jsonld).put("uris", uris);
+	        //return new JSONObject().put("jsonld", new JSONObject(str)).put("base", systemBase);			
+			return  Futures.immediateFuture(retval);
+		} 
+		catch (Exception e) {
+			throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
+		} 
 	}
 
 }

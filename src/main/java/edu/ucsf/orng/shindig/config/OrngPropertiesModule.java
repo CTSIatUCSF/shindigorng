@@ -30,7 +30,7 @@ public class OrngPropertiesModule extends PropertiesModule implements OrngProper
 		}
 
 		String orngSystem = getProperties().getProperty("orng.system");		
-		if (!PROFILES.equalsIgnoreCase(orngSystem) && !VIVO.equalsIgnoreCase(orngSystem)) {
+		if (!SYS_PROFILES.equalsIgnoreCase(orngSystem) && !SYS_VIVO.equalsIgnoreCase(orngSystem)) {
 			throw new RuntimeException("orng.system not set properly. Needs to be Profiles or VIVO, is :" + orngSystem);
 		}
 	}

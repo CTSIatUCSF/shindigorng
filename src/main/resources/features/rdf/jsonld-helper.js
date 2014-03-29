@@ -11,16 +11,19 @@ var jsonldHelper = {};
  * Returns an array of URI's
  */
 jsonldHelper.getObjectUris = function(data, property) {
-	var subject = jsonldHelper.getSubject(data);
-	var objects = subject[property];
 	var retval = [];
-	if (objects instanceof Array) {
-		for (var i = 0; i < objects.length; i++) {
-			retval[i] = data.base + objects[i]['@id'];
+	if (data['@graph'] instanceof Array) {
+		for (var i = 0; i < data['@graph'].length; i++) {
+			retval = retval.concat(jsonldHelper.getObjectUris(data['@graph'][i], property));
 		}
 	}
-	else if (objects) {
-		retval[0] = data.base + objects['@id'];
+	else if (data[property] instanceof Array) {
+		for (var i = 0; i < data[property].length; i++) {
+			retval[i] = data[property][i]['@id'];
+		}
+	}
+	else if (data[property]) {
+		retval[0] = data[property]['@id'];
 	}
 	return retval;
 };

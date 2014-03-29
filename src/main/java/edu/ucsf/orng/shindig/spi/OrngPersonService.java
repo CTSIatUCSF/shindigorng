@@ -42,30 +42,37 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import edu.ucsf.ctsi.r2r.R2RConstants;
 import edu.ucsf.orng.shindig.config.OrngProperties;
 import edu.ucsf.orng.shindig.model.OrngName;
 import edu.ucsf.orng.shindig.model.OrngPerson;
+import edu.ucsf.orng.shindig.spi.rdf.JsonLDService;
 import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
 /**
  * Implementation of supported services backed by a JSON DB.
  */
 @Singleton
-public class OrngPersonService implements PersonService, OrngProperties {
+public class OrngPersonService implements PersonService, OrngProperties, R2RConstants {
 
 	private static final Logger LOG = Logger.getLogger(OrngPersonService.class.getName());	
 	
+	// ontlogy items
+	
+	
 	private String read_sp;
 	private final RdfService rdfService;
+	private final JsonLDService jsonldService;
 	private final OrngDBUtil dbUtil;
 	private final Cache<String, Person> cache; 
 	private Map<String, Method> personSetMethods = new HashMap<String, Method>();
 
 	@Inject
-	public OrngPersonService(@Named("orng.system") String system, RdfService rdfService, OrngDBUtil dbUtil, CacheProvider cacheProvider) {
+	public OrngPersonService(@Named("orng.system") String system, RdfService rdfService, JsonLDService jsonldService, OrngDBUtil dbUtil, CacheProvider cacheProvider) {
 		this.rdfService = rdfService;
+		this.jsonldService = jsonldService;
 		this.dbUtil = dbUtil;
-		if (PROFILES.equalsIgnoreCase(system)) {
+		if (SYS_PROFILES.equalsIgnoreCase(system)) {
 			this.read_sp = "[ORNG.].[ReadPerson]";
 		}
 		else {
@@ -113,8 +120,8 @@ public class OrngPersonService implements PersonService, OrngProperties {
 		
 		try {
 			// There can be only one!
-			if (strId != null) {
-				JSONObject personJSON =  rdfService.getRDF(strId, false, null, null, token);
+			if (strId != null) {				
+				JSONObject personJSON = jsonldService.getJSONObject(rdfService.getRDF(strId, false, null, null, null, token));
 				personObj = parsePerson(strId, personJSON);
 				cache.addElement(strId, personObj);
 				return Futures.immediateFuture(personObj);
@@ -139,28 +146,28 @@ public class OrngPersonService implements PersonService, OrngProperties {
 		}
 
 		retVal.setProfileUrl(strId);
-		if (json.has("mainImage") && json.getString("mainImage") != null) {
-			retVal.setThumbnailUrl(json.getString("mainImage"));
+		if (json.has(PRNS + "mainImage") && json.getString(PRNS + "mainImage") != null) {
+			retVal.setThumbnailUrl(json.getString(PRNS + "mainImage"));
 		}
-		if (json.has("label") && json.getString("label") != null) {
-			retVal.setDisplayName(json.getString("label"));
+		if (json.has(RDFS + "label") && json.getString(RDFS + "label") != null) {
+			retVal.setDisplayName(json.getString(RDFS + "label"));
 		}
-		if (json.has("email") && json.getString("email") != null) {
+		if (json.has(VIVO + "email") && json.getString(VIVO + "email") != null) {
 			List<ListField> emails = new ArrayList<ListField>();
-			emails.add( new ListFieldImpl(null, json.getString("email")) );
+			emails.add( new ListFieldImpl(null, json.getString(VIVO + "email")) );
 			retVal.setEmails(emails);
 		}
-		else if (json.has("primaryEmail") && json.getString("primaryEmail") != null) {
+		else if (json.has(VIVO + "primaryEmail") && json.getString(VIVO + "primaryEmail") != null) {
 			List<ListField> emails = new ArrayList<ListField>();
-			emails.add( new ListFieldImpl(null, json.getString("primaryEmail")) );
+			emails.add( new ListFieldImpl(null, json.getString(VIVO + "primaryEmail")) );
 			retVal.setEmails(emails);
 		}
 		Name name = new OrngName();
-		if (json.has("firstName") && json.getString("firstName") != null) {				
-			name.setGivenName(json.getString("firstName"));
+		if (json.has(FOAF + "firstName") && json.getString(FOAF + "firstName") != null) {				
+			name.setGivenName(json.getString(FOAF + "firstName"));
 		}
-		if (json.has("lastName") && json.getString("lastName") != null) {				
-			name.setFamilyName(json.getString("lastName"));
+		if (json.has(FOAF + "lastName") && json.getString(FOAF + "lastName") != null) {				
+			name.setFamilyName(json.getString(FOAF + "lastName"));
 		}
 		retVal.setName(name);
 		
