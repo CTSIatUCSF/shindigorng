@@ -25,6 +25,7 @@
  * You can change this by setting options.nocache = 'true'
  */
 gadgets.util.registerOnLoadHandler(function() {
+	
 
   // No point defining these if osapi.rdf.get doesn't exist
   if (osapi && osapi.rdf && osapi.rdf.get) {
@@ -114,16 +115,14 @@ gadgets.util.registerOnLoadHandler(function() {
         };
         
         /*
-         * Return a map of objects keyed by uri
+         * Return an array of objects
          */
         osapi.rdf.parse = function(data) {
             var jsonld = data.jsonld;
 
-            var retval = {};
             // when this happens, just return the jsonld as the only entry
             if (!jsonld.hasOwnProperty('@graph')) {
-                retval[data.uris[0]] = jsonld;
-                return retval;
+                return jsonld;
             }
             
             // put everything in a map keyed by ID
@@ -158,12 +157,26 @@ gadgets.util.registerOnLoadHandler(function() {
             
             // there are many items in the fatObjMap all wired together, return the ones they 
             // specifically asked for aka. data.uris in a map keyed by uri 
+            var retval = [];
     	    for (var i = 0; i < data.uris.length; i++) {
     	    	var uri = data.uris[i];
-    		    retval[uri] = fatObjMap[uri];
+    		    retval.push(fatObjMap[uri]);
     	    }
-    	    return retval;
+    	    return retval.length == 1 ? retval[0] : retval;
         };
-
+        
      }
 });
+
+// legacy
+var jsonldHelper = jsonldHelper || {};
+jsonldHelper.getItem = function(data) {
+	var person = osapi.rdf.parse(data)[data.uris[0]];
+	person.firstName = person['http://xmlns.com/foaf/0.1/firstName'];
+	person.middleName = person['http://vivoweb.org/ontology/core#middleName'];
+	person.lastName = person['http://xmlns.com/foaf/0.1/lastName'];
+	person.fullName = person['http://profiles.catalyst.harvard.edu/ontology/prns#fullName'];
+	person.label = person['http://www.w3.org/2000/01/rdf-schema#/label'];
+	return person;
+};
+
