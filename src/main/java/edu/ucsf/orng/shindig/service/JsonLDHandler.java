@@ -18,18 +18,15 @@
 package edu.ucsf.orng.shindig.service;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.protocol.HandlerPreconditions;
 import org.apache.shindig.protocol.Operation;
 import org.apache.shindig.protocol.ProtocolException;
-import org.apache.shindig.protocol.RequestItem;
 import org.apache.shindig.protocol.Service;
 import org.apache.shindig.social.opensocial.service.SocialRequestItem;
 import org.apache.shindig.social.opensocial.spi.CollectionOptions;
@@ -37,44 +34,40 @@ import org.apache.shindig.social.opensocial.spi.GroupId;
 import org.apache.shindig.social.opensocial.spi.UserId;
 import org.json.JSONObject;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.ucsf.orng.shindig.config.OrngProperties;
-import edu.ucsf.orng.shindig.spi.rdf.JsonLDService;
+import edu.ucsf.orng.shindig.spi.rdf.OrngJsonLDService;
 import edu.ucsf.orng.shindig.spi.rdf.RdfItem;
 import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
 /**
  * RPC/REST handler for all /people requests
  */
-@Service(name = "rdf", path = "/{userId}+/{groupId}/{personId}+")
-public class RdfHandler implements OrngProperties {
+@Service(name = "jsonld", path = "/{userId}+/{groupId}/{personId}+")
+public class JsonLDHandler implements OrngProperties {
 
 	private final RdfService rdfService;
-	private final JsonLDService jsonldService;
-	private final ContainerConfig config;
+	private final OrngJsonLDService jsonldService;
 	
 	@Inject
-	public RdfHandler(RdfService rdfService, JsonLDService jsonldService, ContainerConfig config) {
+	public JsonLDHandler(RdfService rdfService, OrngJsonLDService jsonldService) {
 		this.rdfService = rdfService;
 		this.jsonldService = jsonldService;
-		this.config = config;
 	}
 
 	/**
-	 * Allowed end-points /rdf/{userId}+/{groupId}
+	 * Allowed end-points /jsonld/{userId}+/{groupId}
 	 * /people/{userId}/{groupId}/{optionalPersonId}+
 	 * 
-	 * examples: /rdf/john.doe/@all /people/john.doe/@friends /people/john.doe/@self
+	 * examples: /jsonld/john.doe/@all /people/john.doe/@friends /people/john.doe/@self
 	 */
 	@Operation(httpMethods = "GET")
-	public Future<?> get(SocialRequestItem request) throws ProtocolException {
+	public Future<?> getJsonLDData(SocialRequestItem request) throws ProtocolException {
 		GroupId groupId = request.getGroup();
 		Set<String> optionalURLs = ImmutableSet.copyOf(request
 				.getListParameter("url"));
@@ -94,15 +87,6 @@ public class RdfHandler implements OrngProperties {
 		Set<String> fields = request.getFields();
 
 		return getJSONItems(urls, nocache, output, fields, containerSessionId, groupId, options, request.getToken());
-	}
-
-	@Operation(httpMethods = "GET", path = "/@supportedOntologies")
-	public List<Object> supportedOntologies(RequestItem request) {
-		// TODO: Would be nice if name in config matched name of service.
-		String container = Objects.firstNonNull(request.getToken()
-				.getContainer(), "default");
-		return config.getList(container,
-				"${Cur['gadgets.features'].opensocial.supportedOntologies}");
 	}
 
 	public Set<String> makeIdsIntoURLs(Set<UserId> userIds, SecurityToken token) {
@@ -136,18 +120,18 @@ public class RdfHandler implements OrngProperties {
 			CollectionOptions collectionOptions, SecurityToken token)
 			throws ProtocolException {
 		// find a way to add in the namespaces
-		Model model = ModelFactory.createDefaultModel();
+		//Model model = ModelFactory.createDefaultModel();
 		try {
+			Model model = null;
 			Set<String> uris = Sets.newLinkedHashSet();
 			for (String url : urls) {
 				RdfItem item = rdfService.getRDF(url, nocache, "full".equalsIgnoreCase(output), fields, containerSessionId, token);
-				model.add(item.getModel());
+				model = model == null ? item.getModel() : model.add(item.getModel());
 				uris.add(item.getRequestedUri());
 			}
 			JSONObject jsonld = jsonldService.getJSONObject(model);
 			// add the URI's
-			JSONObject retval = new JSONObject().put("jsonld", jsonld).put("uris", uris);
-	        //return new JSONObject().put("jsonld", new JSONObject(str)).put("base", systemBase);			
+			JSONObject retval = new JSONObject().put("base", jsonldService.getBase()).put("uris", uris).put("jsonld", jsonld);
 			return  Futures.immediateFuture(retval);
 		} 
 		catch (Exception e) {

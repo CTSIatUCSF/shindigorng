@@ -46,7 +46,7 @@ import edu.ucsf.ctsi.r2r.R2RConstants;
 import edu.ucsf.orng.shindig.config.OrngProperties;
 import edu.ucsf.orng.shindig.model.OrngName;
 import edu.ucsf.orng.shindig.model.OrngPerson;
-import edu.ucsf.orng.shindig.spi.rdf.JsonLDService;
+import edu.ucsf.orng.shindig.spi.rdf.OrngJsonLDService;
 import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
 /**
@@ -62,13 +62,13 @@ public class OrngPersonService implements PersonService, OrngProperties, R2RCons
 	
 	private String read_sp;
 	private final RdfService rdfService;
-	private final JsonLDService jsonldService;
+	private final OrngJsonLDService jsonldService;
 	private final OrngDBUtil dbUtil;
 	private final Cache<String, Person> cache; 
 	private Map<String, Method> personSetMethods = new HashMap<String, Method>();
 
 	@Inject
-	public OrngPersonService(@Named("orng.system") String system, RdfService rdfService, JsonLDService jsonldService, OrngDBUtil dbUtil, CacheProvider cacheProvider) {
+	public OrngPersonService(@Named("orng.system") String system, RdfService rdfService, OrngJsonLDService jsonldService, OrngDBUtil dbUtil, CacheProvider cacheProvider) {
 		this.rdfService = rdfService;
 		this.jsonldService = jsonldService;
 		this.dbUtil = dbUtil;

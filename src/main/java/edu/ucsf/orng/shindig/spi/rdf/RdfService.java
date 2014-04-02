@@ -84,7 +84,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
     		String fusekiURL = fuseki;
     		if ("internal".equalsIgnoreCase(fuseki)) {
     			fusekiURL = "http://localhost:3030/profiles";
-    			fusekiServer = new SPARQLServer(FusekiConfig.configure(JsonLDService.class.getResource("/fuseki-shindigorng.ttl").getFile()));
+    			fusekiServer = new SPARQLServer(FusekiConfig.configure(OrngJsonLDService.class.getResource("/fuseki-shindigorng.ttl").getFile()));
     			fusekiServer.start();
     		}
 	    	

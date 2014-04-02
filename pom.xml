@@ -9,10 +9,11 @@
 	<name>shindigorng Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 
-    <properties>
-        <shindig.version>2.5.1</shindig.version>
-        <jsonld.version>0.3</jsonld.version>
-    </properties>
+	<properties>
+		<shindig.version>2.5.1</shindig.version>
+		<jsonld.version>0.3</jsonld.version>
+		<profiles.location>/Development/ProfilesRNS</profiles.location>
+	</properties>
 
 	<build>
 		<finalName>shindigorng</finalName>
@@ -21,8 +22,51 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.4</version>
 			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.6</version>
+				<executions>
+					<execution>
+						<id>copy-config-to-profiles</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${profiles.location}/ProfilesRNS/Website/ORNG/shindig/conf</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<includes>
+										<include>shindigorng.properties</include>
+										<include>*.ttl</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-war-to-profiles</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${profiles.location}/ProfilesRNS/Website/ORNG</outputDirectory>
+							<resources>
+								<resource>
+									<directory>target</directory>
+									<includes>
+										<include>*.war</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
-   	</build>
+	</build>
 
 	<dependencies>
 		<dependency>

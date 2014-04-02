@@ -17,13 +17,15 @@ KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 -->
 <feature>
-  <name>rdf</name>
+  <name>jsonld</name>
   <dependency>core.io</dependency>
   <dependency>osapi</dependency>
   <gadget>
-    <script src="rdfhelpers.js"></script>
+    <script src="jsonld.js"></script>
+    <script src="jsonldhelpers.js"></script>
   </gadget>
   <container>
-    <script src="rdfhelpers.js"></script>
+    <script src="jsonld.js"></script>
+    <script src="jsonldhelpers.js"></script>
   </container>
 </feature>

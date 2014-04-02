@@ -18,6 +18,6 @@
 #
 # List each feature you want to support here
 
-features/rdf/feature.xml
+features/jsonld/feature.xml
 features/orng/feature.xml
 features/start-hidden/feature.xml

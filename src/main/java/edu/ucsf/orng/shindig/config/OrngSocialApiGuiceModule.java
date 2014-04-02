@@ -18,12 +18,12 @@ import org.apache.shindig.social.opensocial.spi.PersonService;
 
 import edu.ucsf.orng.shindig.auth.OrngOAuthSupport;
 import edu.ucsf.orng.shindig.auth.OrngSecurityTokenService;
-import edu.ucsf.orng.shindig.service.RdfHandler;
+import edu.ucsf.orng.shindig.service.JsonLDHandler;
 import edu.ucsf.orng.shindig.spi.OrngActivityService;
 import edu.ucsf.orng.shindig.spi.OrngAppDataService;
 import edu.ucsf.orng.shindig.spi.OrngMessageService;
 import edu.ucsf.orng.shindig.spi.OrngPersonService;
-import edu.ucsf.orng.shindig.spi.rdf.JsonLDService;
+import edu.ucsf.orng.shindig.spi.rdf.OrngJsonLDService;
 import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
 import com.google.common.collect.ImmutableSet;
@@ -42,7 +42,7 @@ public class OrngSocialApiGuiceModule extends SocialApiGuiceModule {
 		bind(OAuth2DataService.class).to(OrngOAuthSupport.class);
 
 		bind(RdfService.class);
-		bind(JsonLDService.class);		
+		bind(OrngJsonLDService.class);		
 		bind(OrngSecurityTokenService.class);
 	}
 
@@ -53,6 +53,6 @@ public class OrngSocialApiGuiceModule extends SocialApiGuiceModule {
 	protected Set<Class<?>> getHandlers() {
 	
 	    return ImmutableSet.of(ActivityHandler.class, AppDataHandler.class,
-	            PersonHandler.class, MessageHandler.class, RdfHandler.class);		
+	            PersonHandler.class, MessageHandler.class, JsonLDHandler.class);		
 	}
 }

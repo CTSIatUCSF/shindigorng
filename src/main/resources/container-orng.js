@@ -325,7 +325,7 @@
 	                 "gadgets.token", "albums.supportedFields", "albums.get", "albums.delete", "albums.update", "albums.create",
 	                 "mediaItems.create", "mediaItems.update", "mediaItems.get", "mediaItems.supportedFields", "mediaItems.delete",
 	                 "http.put", "http.head", "http.post", "http.get", "http.delete", "system.listMethods", "messages.create",
-	                 "messages.delete", "messages.modify", "messages.get", "rdf.get", "rdf.supportedOntologies",
+	                 "messages.delete", "messages.modify", "messages.get", "rdf.get",
 	                 "rdf.getViewer", "rdf.getOwner", "rdf.getRDF", "appdata.update", "appdata.delete", "appdata.create", "appdata.get",
 	                 "activitystreams.create", "activitystreams.get", "activitystreams.update", "activitystreams.delete", "activitystreams.supportedFields",
 	                 "cache.invalidate", "people.supportedFields", "people.get", "people.update", "people.getViewer",
