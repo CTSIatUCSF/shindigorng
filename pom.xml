@@ -36,7 +36,7 @@
 							<outputDirectory>${profiles.location}/ProfilesRNS/Website/ORNG/shindig/conf</outputDirectory>
 							<resources>
 								<resource>
-									<directory>src/main/resources</directory>
+									<directory>conf</directory>
 									<includes>
 										<include>shindigorng.properties</include>
 										<include>*.ttl</include>

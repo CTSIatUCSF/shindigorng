@@ -119,8 +119,6 @@ public class JsonLDHandler implements OrngProperties {
 			String containerSessionId, GroupId groupId,
 			CollectionOptions collectionOptions, SecurityToken token)
 			throws ProtocolException {
-		// find a way to add in the namespaces
-		//Model model = ModelFactory.createDefaultModel();
 		try {
 			Model model = null;
 			Set<String> uris = Sets.newLinkedHashSet();

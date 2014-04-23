@@ -31,7 +31,7 @@ public class ShindigFusekiClient extends FusekiClient {
 		this.fetcher = fetcher;
 	}
 
-	public int delete(String uri) throws GadgetException {
+	public int deleteSubject(String uri) throws GadgetException {
 	    HttpRequest request = new HttpRequest(fusekiUpdate)
 			        .setMethod("POST")
 			        .setPostBody(("DELETE WHERE { <" + uri + ">  ?p ?o }").getBytes())

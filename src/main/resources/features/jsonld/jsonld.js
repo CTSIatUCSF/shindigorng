@@ -4091,7 +4091,8 @@ function _frame(state, subjects, frame, parent, property) {
 
       // iterate over subject properties
       var subject = matches[id];
-      var props = Object.keys(subject).sort();
+      // cheap IE8 fix by Eric Meeks at UCSF
+      var props = !subject ? [] : Object.keys(subject).sort();
       for(var i = 0; i < props.length; i++) {
         var prop = props[i];
 
@@ -4717,7 +4718,7 @@ function _compactIri(activeCtx, iri, value, relativeTo, reverse) {
   }
 
   // compact IRI relative to base
-  if(!relativeTo.vocab) {
+  if(!relativeTo.vocab && (typeof iri == 'string' || iri instanceof String)) {  // string check by Eric Meeks at UCSF to help with IE8
     return _removeBase(activeCtx['@base'], iri);
   }
 

@@ -21,10 +21,12 @@ specific language governing permissions and limitations under the License.
   <dependency>core.io</dependency>
   <dependency>osapi</dependency>
   <gadget>
+    <script src="ie8fix.js"></script>
     <script src="jsonld.js"></script>
     <script src="jsonldhelpers.js"></script>
   </gadget>
   <container>
+    <script src="ie8fix.js"></script>
     <script src="jsonld.js"></script>
     <script src="jsonldhelpers.js"></script>
   </container>
