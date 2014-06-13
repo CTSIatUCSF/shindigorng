@@ -21,6 +21,7 @@ import org.apache.shindig.social.opensocial.spi.AppDataService;
 import org.apache.shindig.social.opensocial.spi.GroupId;
 import org.apache.shindig.social.opensocial.spi.UserId;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
@@ -215,14 +216,15 @@ public class OrngAppDataService implements AppDataService, OrngProperties {
             cs.setString(3, key);
             cs.setString(4, CHUNKED_MARKER);
             cs.execute();
-            cs.setString(3, key + CHUNKED_COUNT_SUFFIX);
-            cs.setString(4, "" + (((value.length()-1) / appDataValueLimit) + 1));
-            cs.execute();
-            for (int i = 0; i < value.length(); i += appDataValueLimit) {
-                cs.setString(3, key + "." + i);
-                cs.setString(4, value.substring(i, Math.min(i + appDataValueLimit, value.length())));            	
-                cs.execute();
+            int numChunks = 0;
+            for (String chunk : Splitter.fixedLength(appDataValueLimit).split(value)) {
+                cs.setString(3, key + "." + numChunks++);
+                cs.setString(4, chunk);            	
+                cs.execute();            	            	
             }
+            cs.setString(3, key + CHUNKED_COUNT_SUFFIX);
+            cs.setString(4, "" + numChunks);
+            cs.execute();
         }
         else {
 	        cs.setString(3, key);

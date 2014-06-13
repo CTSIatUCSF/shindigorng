@@ -17,12 +17,12 @@ KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 -->
 <feature>
-  <name>orng</name>
-  <dependency>rpc</dependency>
+  <name>orng-ga</name>
+  <dependency>orng</dependency>
   <gadget>
-    <script src="gadgets-orng.js"></script>
+    <script src="gadgets-orng-ga.js"></script>
   </gadget>
   <container>
-    <script src="container-orng.js"></script>
+    <script src="container-orng-ga.js"></script>
   </container>
 </feature>

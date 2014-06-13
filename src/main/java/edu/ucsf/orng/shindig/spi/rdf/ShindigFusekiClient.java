@@ -20,8 +20,7 @@ public class ShindigFusekiClient extends FusekiClient {
 	
 	private Uri fusekiPost = Uri.parse("http://localhost:3030/ds/data?default");
 	private Uri fusekiUpdate = Uri.parse("http://localhost:3030/ds/update");
-	private HttpFetcher fetcher;
-	
+	private HttpFetcher fetcher;	
 	
 	@Inject
 	public ShindigFusekiClient(@Named("orng.fuseki") String fusekiURL, HttpFetcher fetcher) {
