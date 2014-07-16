@@ -2,6 +2,7 @@ package edu.ucsf.orng.shindig.spi.rdf;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.fuseki.server.FusekiConfig;
 import org.apache.jena.fuseki.server.SPARQLServer;
@@ -24,10 +27,10 @@ import org.apache.shindig.common.cache.CacheProvider;
 import org.apache.shindig.common.servlet.GuiceServletContextListener.CleanupCapable;
 import org.apache.shindig.common.servlet.GuiceServletContextListener.CleanupHandler;
 import org.apache.shindig.gadgets.http.HttpFetcher;
+import org.apache.shindig.protocol.ProtocolException;
+import org.apache.shindig.social.opensocial.spi.UserId;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
-
-
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -49,8 +52,12 @@ public class RdfService implements OrngProperties, CleanupCapable {
 	private String system;
 	private String systemDomain;
 	private String systemBase;
+	private String get_sp;
+	private String add_sp;
+	private String delete_sp;
 	private OrngDBUtil dbUtil;
-	private Cache<String, Model> generalCache;
+	private Cache<String, Model> modelCache;
+	private Cache<String, String> appInstanceCache;
 	
 	private SPARQLServer fusekiServer;
 	private FusekiCache userCache;
@@ -68,19 +75,23 @@ public class RdfService implements OrngProperties, CleanupCapable {
 		this.systemBase = systemDomain;
 		if (SYS_PROFILES.equalsIgnoreCase(system)) {
 			systemBase += "/profile/";
+			this.get_sp = "[ORNG.].[GetAppInstance]";
+			this.add_sp = "[ORNG.].[AddAppToPerson]";
+			this.delete_sp = "[ORNG.].[RemoveAppFromPerson]";
 		}		
 
 		// set up the cache
     	this.dbUtil = dbUtil;
     	
     	if (cacheProvider != null) {
-    		generalCache = cacheProvider.createCache("orngRdf");
+    		modelCache = cacheProvider.createCache("orngRdf");
+    		appInstanceCache = cacheProvider.createCache("orgnAppInstance");
     	}
     	if (cleanup != null) {
     		cleanup.register(this);
     	}
 
-    	if (fuseki != null) {
+    	if (StringUtils.isNotBlank(fuseki)) {
     		String fusekiURL = fuseki;
     		if ("internal".equalsIgnoreCase(fuseki)) {
     			fusekiURL = "http://localhost:3030/profiles";
@@ -106,16 +117,36 @@ public class RdfService implements OrngProperties, CleanupCapable {
 	    	}
 	}
 	
-	private Model getFromCache(String key) {
-		return generalCache != null ? generalCache.getElement(key) : null;
+	private Model getFromModelCache(String key) {
+		return modelCache != null ? modelCache.getElement(key) : null;
 	}
 	
-	private void addToCache(String key, Model value) {
-		if (generalCache != null) {
-			generalCache.addElement(key, value);
+	private void addToModelCache(String key, Model value) {
+		if (modelCache != null) {
+			modelCache.addElement(key, value);
 		}
 	}
 	
+	// This cache is OK because Profiles does not actually mess with the appInstance
+	// actually need to think about that....
+	private String getKey(String id, String appId) {
+		return id + "-" + appId;
+	}
+	
+	private String getFromAppInstanceCache(String id, String appId) {
+		return appInstanceCache != null ? appInstanceCache.getElement(getKey(id, appId)) : null;
+	}
+	
+	private void addToAppInstanceCache(String id, String appId, String value) {
+		if (appInstanceCache != null) {
+			appInstanceCache.addElement(getKey(id, appId), value);
+		}
+	}
+
+	private String removeFromAppInstanceCache(String id, String appId) {
+		return appInstanceCache != null ? appInstanceCache.removeElement(getKey(id, appId)) : null;
+	}
+
 	// maybe have some option to force fresh or allow cache, etc.
 	public RdfItem getRDF(String url, boolean nocache, boolean expand, Set<String> fields, String sessionId, SecurityToken token) throws Exception {		
 		String uri = getURI(url);
@@ -133,7 +164,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
 		}
 		
 		String cacheKey = uri + anonymous + expand;
-		Model model = getFromCache(cacheKey);
+		Model model = getFromModelCache(cacheKey);
 		if (model != null) {
 			return new RdfItem(model, uri);
 		}
@@ -151,7 +182,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
 			model = service.getModel(uri);
 			// this is the only one worth caching, others are fast enough as is
 			if (model != null) {
-	        	addToCache(cacheKey, model);
+	        	addToModelCache(cacheKey, model);
 			}
 		}
 		return new RdfItem(model, uri);
@@ -197,7 +228,101 @@ public class RdfService implements OrngProperties, CleanupCapable {
 		}
 		return null;
 	}
-		
+	
+	public String getAppInstance(UserId userId, String appId, SecurityToken token) {
+		String id = userId.getUserId(token);
+		appId = dbUtil.getAppId(appId);
+		String retval = getFromAppInstanceCache(id, appId);
+		if (retval != null) {
+			// cheap trick to return null when we've checked before and have no entry
+			return retval != "" ? retval : null; 
+		}
+        Connection conn = dbUtil.getConnection();
+        try {
+            CallableStatement cs = conn
+    		        .prepareCall("{ call " + get_sp + "(?, ?, ?, ?)}");
+            cs.setNull("SubjectID", java.sql.Types.BIGINT);
+    		cs.setString("SubjectURI", id);
+    		cs.setInt("AppID", Integer.parseInt(appId));
+            cs.setNull("SessionID", java.sql.Types.VARCHAR);
+        	ResultSet rs = cs.executeQuery();
+            if (rs.next()) {
+            	retval = rs.getString(1);
+            	addToAppInstanceCache(id, appId, retval != null ? retval : "");
+            }
+            return retval; 
+        } 
+        catch (SQLException se) {
+            throw new ProtocolException(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+                            .getMessage(), se);
+        }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
+	}
+	
+	public boolean addAppToPerson(UserId userId, String appId, SecurityToken token) {
+		String id = userId.getUserId(token);
+		appId = dbUtil.getAppId(appId);
+		// clear cache
+		removeFromAppInstanceCache(id, appId);
+		Connection conn = dbUtil.getConnection();
+        try {
+            CallableStatement cs = conn
+    		        .prepareCall("{ call " + add_sp + "(?, ?, ?)}");
+            cs.setNull("SubjectID", java.sql.Types.BIGINT);
+    		cs.setString("SubjectURI", id);
+    		cs.setInt("AppID", Integer.parseInt(appId));
+            return cs.execute();
+        } 
+        catch (SQLException se) {
+            throw new ProtocolException(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+                            .getMessage(), se);
+        }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
+	}
+	
+	public boolean removeAppFromPerson(UserId userId, String appId, String deleteType, SecurityToken token) {
+		String id = userId.getUserId(token);
+		appId = dbUtil.getAppId(appId);
+		// clear cache
+		removeFromAppInstanceCache(id, appId);
+        Connection conn = dbUtil.getConnection();
+        try {
+            CallableStatement cs = conn
+    		        .prepareCall("{ call " + delete_sp + "(?, ?, ?)}");
+            cs.setNull("SubjectID", java.sql.Types.BIGINT);
+    		cs.setString("SubjectURI", id);
+    		cs.setInt("AppID", Integer.parseInt(appId));
+    		cs.setInt("DeleteType", Integer.parseInt(deleteType));
+            return cs.execute();
+        } 
+        catch (SQLException se) {
+            throw new ProtocolException(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+                            .getMessage(), se);
+        }
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+				throw new ProtocolException(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se
+								.getMessage(), se);
+			}
+		}
+	}
+			
 	// important to put this in only 1 thread!
 	private class EagerFetcher implements Runnable {
 

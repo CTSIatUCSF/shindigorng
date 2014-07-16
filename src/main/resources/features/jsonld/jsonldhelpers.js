@@ -26,17 +26,9 @@
  */
 gadgets.util.registerOnLoadHandler(function() {
 
-
 	// No point defining these if jsonld and osapi.jsonld.getJsonLDData doesn't exist
 	if (osapi && osapi.jsonld && osapi.jsonld.getJsonLDData) {
 
-		/**
-		 * Helper functions to get People.
-		 * Options specifies parameters to the call as outlined in the
-		 * JSON RPC Opensocial Spec
-		 * http://www.opensocial.org/Technical-Resources/opensocial-spec-v081/rpc-protocol
-		 * @param {object.<JSON>} The JSON object of parameters for the specific request.
-		 */
 		/**
 		 * Function to get Viewer profile.
 		 * Options specifies parameters to the call as outlined in the
@@ -201,6 +193,7 @@ gadgets.util.registerOnLoadHandler(function() {
 		};
 
 	}
+
 });
 
 //legacy

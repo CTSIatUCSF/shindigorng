@@ -19,6 +19,7 @@ import org.apache.shindig.social.opensocial.spi.PersonService;
 import edu.ucsf.orng.shindig.auth.OrngOAuthSupport;
 import edu.ucsf.orng.shindig.auth.OrngSecurityTokenService;
 import edu.ucsf.orng.shindig.service.JsonLDHandler;
+import edu.ucsf.orng.shindig.service.OrngAppHandler;
 import edu.ucsf.orng.shindig.spi.OrngActivityService;
 import edu.ucsf.orng.shindig.spi.OrngAppDataService;
 import edu.ucsf.orng.shindig.spi.OrngMessageService;
@@ -53,6 +54,6 @@ public class OrngSocialApiGuiceModule extends SocialApiGuiceModule {
 	protected Set<Class<?>> getHandlers() {
 	
 	    return ImmutableSet.of(ActivityHandler.class, AppDataHandler.class,
-	            PersonHandler.class, MessageHandler.class, JsonLDHandler.class);		
+	            PersonHandler.class, MessageHandler.class, JsonLDHandler.class, OrngAppHandler.class);		
 	}
 }

@@ -46,7 +46,7 @@ import edu.ucsf.orng.shindig.spi.rdf.RdfItem;
 import edu.ucsf.orng.shindig.spi.rdf.RdfService;
 
 /**
- * RPC/REST handler for all /people requests
+ * RPC/REST handler for all /jsonld requests
  */
 @Service(name = "jsonld", path = "/{userId}+/{groupId}/{personId}+")
 public class JsonLDHandler implements OrngProperties {
@@ -130,7 +130,7 @@ public class JsonLDHandler implements OrngProperties {
 			JSONObject jsonld = jsonldService.getJSONObject(model);
 			// add the URI's
 			JSONObject retval = new JSONObject().put("base", jsonldService.getBase()).put("uris", uris).put("jsonld", jsonld);
-			return  Futures.immediateFuture(retval);
+			return Futures.immediateFuture(retval);
 		} 
 		catch (Exception e) {
 			throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
