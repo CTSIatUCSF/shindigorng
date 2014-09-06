@@ -199,7 +199,7 @@ gadgets.util.registerOnLoadHandler(function() {
 //legacy
 var jsonldHelper = jsonldHelper || {};
 jsonldHelper.getItem = function(data) {
-	var person = osapi.rdf.parse(data)[data.uris[0]];
+	var person = osapi.jsonld.parse(data)[data.uris[0]];
 	person.firstName = person['http://xmlns.com/foaf/0.1/firstName'];
 	person.middleName = person['http://vivoweb.org/ontology/core#middleName'];
 	person.lastName = person['http://xmlns.com/foaf/0.1/lastName'];

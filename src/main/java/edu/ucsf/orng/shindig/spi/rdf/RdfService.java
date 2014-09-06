@@ -99,7 +99,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
     			fusekiServer.start();
     		}
 	    	
-	    	userCache = new FusekiCache(new ShindigFusekiClient(fusekiURL, fetcher), new DbService(systemDomain, orngUser, dbUtil));
+	    	userCache = new FusekiCache(new ShindigSparqlClient(fusekiURL, fetcher), new DbService(systemDomain, orngUser, dbUtil));
 	    	//userService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + orngUser, tdbCacheExpire, new DbModelService(systemDomain, orngUser, dbUtil));
 	    	//anonymousService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + ANONYMOUS, tdbCacheExpire, new DbModelService(systemDomain, null, dbUtil));
 	    	
