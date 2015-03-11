@@ -124,7 +124,7 @@ gadgets.util.registerOnLoadHandler(function() {
 			var osapiJsonldIds = [];
 			// strip base out to get ids
 			for (var i = 0; i < data.uris.length; i++) {
-				osapiJsonldIds[i] = data.base && data.uris[i].indexOf(data.base) == 0 ? data.uris[i].substring(data.base.length) : data.uris[i];
+				osapiJsonldIds[i] = data.uris[i];
 			}
 			jsonld.frame(data.jsonld, frame, function(err, data) {
 				// get the ones we care about, add them in proper order

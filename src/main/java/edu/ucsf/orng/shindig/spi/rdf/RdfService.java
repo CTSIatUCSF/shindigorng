@@ -41,6 +41,7 @@ import edu.ucsf.ctsi.r2r.jena.DbService;
 import edu.ucsf.ctsi.r2r.jena.FusekiCache;
 import edu.ucsf.ctsi.r2r.jena.LODService;
 import edu.ucsf.ctsi.r2r.jena.ResourceService;
+import edu.ucsf.ctsi.r2r.jena.SparqlQueryClient;
 import edu.ucsf.orng.shindig.config.OrngProperties;
 import edu.ucsf.orng.shindig.spi.OrngDBUtil;
 
@@ -99,7 +100,9 @@ public class RdfService implements OrngProperties, CleanupCapable {
     			fusekiServer.start();
     		}
 	    	
-	    	userCache = new FusekiCache(new ShindigSparqlClient(fusekiURL, fetcher), new DbService(systemDomain, orngUser, dbUtil));
+	    	userCache = new FusekiCache(new SparqlQueryClient(fusekiURL + "/query"),
+	    								new ShindigSparqlPostClient(fusekiURL + "/update", fusekiURL + "/data?default", fetcher), 
+	    								new DbService(systemDomain, orngUser, dbUtil));
 	    	//userService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + orngUser, tdbCacheExpire, new DbModelService(systemDomain, orngUser, dbUtil));
 	    	//anonymousService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + ANONYMOUS, tdbCacheExpire, new DbModelService(systemDomain, null, dbUtil));
 	    	
@@ -302,7 +305,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
         Connection conn = dbUtil.getConnection();
         try {
             CallableStatement cs = conn
-    		        .prepareCall("{ call " + delete_sp + "(?, ?, ?)}");
+    		        .prepareCall("{ call " + delete_sp + "(?, ?, ?, ?)}");
             cs.setNull("SubjectID", java.sql.Types.BIGINT);
     		cs.setString("SubjectURI", id);
     		cs.setInt("AppID", Integer.parseInt(appId));
