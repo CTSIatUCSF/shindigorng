@@ -1,6 +1,5 @@
 package edu.ucsf.orng.shindig.spi.rdf;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -70,7 +69,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
 							  @Named("orng.fuseki") String fuseki, @Named("orng.fusekiDBUser") String orngUser, 
 							  @Named("orng.fusekiFetchIntervalMinutes") String fetchInterval, @Named("orng.fusekiEagerRunLimitMinutes") String eagerRunLimit,
 							  OrngDBUtil dbUtil, CacheProvider cacheProvider, HttpFetcher fetcher,
-							  CleanupHandler cleanup) throws SQLException, IOException {
+							  CleanupHandler cleanup) throws Exception {
 		this.system = system;
 		this.systemDomain = systemDomain;
 		this.systemBase = systemDomain;
