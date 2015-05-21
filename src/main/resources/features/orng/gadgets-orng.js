@@ -55,6 +55,6 @@ gadgets.util.registerOnLoadHandler(function() {
 			options.appId = '@app';
 			options.deleteType = 0; // hard delete
 			return osapi.orng["delete"](options);
-		};
-	}	
+		};		
+	}
 });

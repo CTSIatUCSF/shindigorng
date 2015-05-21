@@ -30,7 +30,8 @@ osapi.container.Container.addMixin('orng', function(container) {
 	container.rpcRegister('orng_containerRpc', function (rpc, channel, opt_params) {
     	// send an ajax command to the server letting them know we need data
     	// since this is directly into Profiles and has nothing to do with Shindig, we just use jquery
-    	var data = { "guid": my.guid, "request": channel };
+		var opt_params = opt_params || {};
+    	var data = { "guid": my.guid, "channel": channel, "opt_params" : opt_params};
 
     	$.ajax({
     		type: "POST",

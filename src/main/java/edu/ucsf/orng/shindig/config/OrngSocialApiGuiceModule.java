@@ -51,6 +51,7 @@ public class OrngSocialApiGuiceModule extends SocialApiGuiceModule {
 	 * Hook to provide a Set of request handlers. Subclasses may override to add
 	 * or replace additional handlers.
 	 */
+	@SuppressWarnings("unchecked")
 	protected Set<Class<?>> getHandlers() {
 	
 	    return ImmutableSet.of(ActivityHandler.class, AppDataHandler.class,

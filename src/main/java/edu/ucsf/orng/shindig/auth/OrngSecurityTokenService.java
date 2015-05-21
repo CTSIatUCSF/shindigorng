@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shindig.auth.BlobCrypterSecurityToken;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.auth.SecurityTokenCodec;
@@ -51,7 +52,7 @@ public class OrngSecurityTokenService implements Runnable, CleanupCapable {
 	public OrngSecurityTokenService(ContainerConfig config, SecurityTokenCodec codec, @Named("orng.tokenservice.port") int port, @Named("orng.tokenservice.socketTimeout") int socketTimeout, CleanupHandler cleanup) {
 		this.securityTokenCodec = codec;
 		this.port = port;
-		this.socketTimeout = socketTimeout;
+		this.socketTimeout = socketTimeout; // we expect this to be in seconds, not milliseconds!
 	    cleanup.register(this);
 		// start listening for connections
 	    listenerService = Executors.newFixedThreadPool(1);
@@ -98,7 +99,7 @@ public class OrngSecurityTokenService implements Runnable, CleanupCapable {
 		try {
 			while (!stop) {
 				final Socket s = ssc.accept().socket();
-				s.setSoTimeout(socketTimeout);
+				s.setSoTimeout(socketTimeout * 1000);
 				LOG.log(Level.INFO, "SoTimeout, SoLinger = " + s.getSoTimeout() + ", " + s.getSoLinger());
 				encoderService.submit(new Runnable() {
 					public void run() {
@@ -110,7 +111,7 @@ public class OrngSecurityTokenService implements Runnable, CleanupCapable {
 									s.getInputStream()));
 							out = new PrintWriter(s.getOutputStream(), true);
 							String input = in.readLine();
-							while (input != null) {
+							while (StringUtils.isNotBlank(input)) {
 								String token = convert(input);
 								// Send back the security token
 								out.println(token);
@@ -145,8 +146,12 @@ public class OrngSecurityTokenService implements Runnable, CleanupCapable {
 	    LOG.log(Level.INFO, "Received " + input + ": length = " + input.length());
 		Map<String, String> tokenParameters = getQueryMap(input);
 	    
+		return convert(tokenParameters);
+	}
+	
+	public String convert(Map<String, String> tokenParameters) throws SecurityTokenException {
 		SecurityToken token = new BlobCrypterSecurityToken(tokenParameters.get(CONTAINER.getKey()), "*", "0", tokenParameters);
-		return securityTokenCodec.encodeToken(token);
+		return securityTokenCodec.encodeToken(token);		
 	}
 
 	private Map<String, String> getQueryMap(String query) throws UnsupportedEncodingException {

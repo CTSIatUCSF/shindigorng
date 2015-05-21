@@ -39,6 +39,7 @@
 									<includes>
 										<include>shindigorng.properties</include>
 										<include>*.ttl</include>
+										<include>config/*</include>
 									</includes>
 								</resource>
 							</resources>
@@ -63,6 +64,29 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>truezip-maven-plugin</artifactId>
+			    <version>1.1</version>
+			    <executions>
+			        <execution>
+			            <id>remove-a-file-in-sub-archive</id>
+			            <goals>
+			                <goal>remove</goal>
+			            </goals>
+			            <phase>package</phase>
+			            <configuration>
+			                <fileset>
+			                    <directory>target/shindigorng/WEB-INF/lib/shindig-gadgets-${shindig.version}.jar</directory>
+			                    <includes>
+			                        <include>config/oauth.json</include>
+			                        <include>config/oauth2.json</include>
+			                    </includes>
+			                </fileset>
+			            </configuration>
+			        </execution>
+			    </executions>
 			</plugin>
 		</plugins>
 	</build>

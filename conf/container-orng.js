@@ -87,6 +87,7 @@
 //
 "gadgets.securityTokenType" : "secure",
 "gadgets.securityTokenKey" : "file:///shindig/openssl/securitytokenkey.txt",
+"gadgets.securityTokenTTL" : "3600", 
 //"gadgets.securityTokenKey" : "default-insecure-embedded-key",
 //"gadgets.securityTokenKey" : "file:///path/to/key/file.txt",
 //"gadgets.securityTokenKey" : "res://some-file-on-the-classpath.txt",
