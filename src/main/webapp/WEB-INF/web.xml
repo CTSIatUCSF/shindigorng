@@ -33,7 +33,7 @@
 			org.apache.shindig.gadgets.oauth.OAuthModule:
 			org.apache.shindig.gadgets.oauth2.OAuth2Module:
 			org.apache.shindig.gadgets.oauth2.OAuth2MessageModule:
-			org.apache.shindig.gadgets.oauth2.handler.OAuth2HandlerModule:
+			edu.ucsf.orng.shindig.auth.OrngOAuth2HandlerModule:
 			org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersistenceModule:
 			org.apache.shindig.common.cache.ehcache.EhCacheModule:
 			org.apache.shindig.extras.ShindigExtrasGuiceModule:

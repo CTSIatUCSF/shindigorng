@@ -29,18 +29,22 @@
  *                                                                             *
  *                                                                             *
  *******************************************************************************
+ *
+ *	Note by Eric Meeks, UCSF.  We hack up these fields to support JWT style of grant_type
+ *	without having to build a new persistence model
+ *
 */
 {
    "gadgetBindings" : {
-      "http://stage-profiles.ucsf.edu/apps_ucsf/PersonalStats.xml" : {
-         "googleAPI" : {
-            "clientName"          : "googleApi_personalStats",
+      "http://stage-profiles.ucsf.edu/apps_ucsf/GoogleOAuth.xml" : {
+         "googleAPIv3" : {
+            "clientName"          : "googleApi_JWT",
             "allowModuleOverride" : "true"
          }
       },
       "http://cranestylelabs.github.io/personal-stats-gadget/PersonalStats.xml" : {
-         "googleAPI" : {
-            "clientName"          : "googleApi_personalStats",
+         "googleAPIv3" : {
+            "clientName"          : "googleApi_JWT",
             "allowModuleOverride" : "true"
          }
       },
@@ -94,13 +98,13 @@
       }
    },
    "clients" : {
-      "googleApi_personalStats" : {
-         "providerName"  : "googleAPI",
-         "redirect_uri"  : "%origin%%contextRoot%/gadgets/oauth2callback",
+      "googleApi_JWT" : {
+         "providerName"  : "googleAPIv3",
+         "redirect_uri"  : "http://stage-profiles.ucsf.edu/shindigorng/gadgets/oauth2callback",
          "type"          : "confidential",
-         "grant_type"    : "client_credentials",
-         "client_id"     : "986158168925-tal6v19vu8sbj4ib6pchrhuhvt8m0r90.apps.googleusercontent.com",
-         "client_secret" : "notasecret",
+         "grant_type"    : "urn:ietf:params:oauth:grant-type:jwt-bearer",
+         "client_id"     : "986158168925-tal6v19vu8sbj4ib6pchrhuhvt8m0r90@developer.gserviceaccount.com",
+         "client_secret" : "-----BEGIN PRIVATE KEY-----\nSecret Stuff\n-----END PRIVATE KEY-----\n",
          "sharedToken"   : "false"
       },
       "googleApi_client1" : {
@@ -169,6 +173,15 @@
         "endpoints" : {
             "authorizationUrl"  : "https://accounts.google.com/o/oauth2/auth",
             "tokenUrl"          : "https://accounts.google.com/o/oauth2/token"
+        }
+      },
+      "googleAPIv3" : {
+        "client_authentication" : "STANDARD",
+        "usesAuthorizationHeader" : "false",
+        "usesUrlParameter" : "true",
+        "endpoints" : {
+            "authorizationUrl"  : "https://www.googleapis.com/oauth2/v3/auth",
+            "tokenUrl"          : "https://www.googleapis.com/oauth2/v3/token"
         }
       },
       "facebook" : {
