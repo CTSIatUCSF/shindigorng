@@ -18,7 +18,7 @@ specific language governing permissions and limitations under the License.
 -->
 <!--
 Applications that include this feature will be hidden by default.  
-They will need to call gadgets.orng.show(); in order by be visible.
+They will need to call gadgets.orng.showGadget(); in order by be visible.
 This allows gadgets that are "conditionally on or off" to control their visibility.
 -->
 <feature>

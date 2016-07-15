@@ -30,7 +30,8 @@ osapi.container.Container.addMixin('orng', function(container) {
 	container.rpcRegister('orng_containerRpc', function (rpc, channel, opt_params) {
     	// send an ajax command to the server letting them know we need data
     	// since this is directly into Profiles and has nothing to do with Shindig, we just use jquery
-		var opt_params = opt_params || {};
+		// note that opt_params needs to be a string value for the .NET RPC to work!!!
+		var opt_params = opt_params || "";
     	var data = { "guid": my.guid, "channel": channel, "opt_params" : opt_params};
 
     	$.ajax({
@@ -47,7 +48,11 @@ osapi.container.Container.addMixin('orng', function(container) {
     });	
     
     container.rpcRegister('orng_reportGoogleAnalyticsEvent', function (rpc, event, opt_params) {
-    	_gaq.push(['_trackEvent', rpc.gs.getTitle(), event.action, event.label, event.value]);
+    	if (window.ga && ga.create) {
+    		// Do you ga stuff
+    		ga('send', 'event', rpc.gs.getTitle(), event.action, event.label, event.value);
+    	}
+    	//_gaq.push(['_trackEvent', rpc.gs.getTitle(), event.action, event.label, event.value]);
     });	
 
 });

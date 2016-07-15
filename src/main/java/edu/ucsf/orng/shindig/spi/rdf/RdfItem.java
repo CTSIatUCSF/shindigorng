@@ -1,13 +1,7 @@
 package edu.ucsf.orng.shindig.spi.rdf;
 
-import java.io.ByteArrayOutputStream;
 
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.hp.hpl.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Model;
 
 public class RdfItem {
 	

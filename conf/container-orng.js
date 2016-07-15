@@ -177,7 +177,7 @@
     "profile" : {
       "isOnlyVisible" : false,
       "urlTemplate" : "http://localhost${CONTEXT_ROOT}/gadgets/profile?{var}",
-      "aliases": ["DASHBOARD", "default"]
+      "aliases": ["profile"]
     },
     "canvas" : {
       "isOnlyVisible" : true,
@@ -187,7 +187,17 @@
     "default" : {
       "isOnlyVisible" : false,
       "urlTemplate" : "http://localhost${CONTEXT_ROOT}/gadgets/default?{var}",
-      "aliases" : ["home", "profile", "canvas"]
+      "aliases" : ["default"]
+    },
+    "verify" : {
+      "isOnlyVisible" : false,
+      "urlTemplate" : "http://localhost${CONTEXT_ROOT}/gadgets/default?{var}",
+      "aliases" : ["verify"]
+    },
+    "home" : {
+      "isOnlyVisible" : false,
+      "urlTemplate" : "http://localhost${CONTEXT_ROOT}/gadgets/default?{var}",
+      "aliases" : ["home"]
     },
     "embedded" : {
       "isOnlyVisible" : false,

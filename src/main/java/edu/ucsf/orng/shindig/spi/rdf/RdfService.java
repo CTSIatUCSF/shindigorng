@@ -18,8 +18,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.fuseki.server.FusekiConfig;
-import org.apache.jena.fuseki.server.SPARQLServer;
+import org.apache.jena.rdf.model.Model;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.cache.Cache;
 import org.apache.shindig.common.cache.CacheProvider;
@@ -34,7 +33,6 @@ import org.joda.time.Period;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.hp.hpl.jena.rdf.model.Model;
 
 import edu.ucsf.ctsi.r2r.jena.DbService;
 import edu.ucsf.ctsi.r2r.jena.FusekiCache;
@@ -59,7 +57,6 @@ public class RdfService implements OrngProperties, CleanupCapable {
 	private Cache<String, Model> modelCache;
 	private Cache<String, String> appInstanceCache;
 	
-	private SPARQLServer fusekiServer;
 	private FusekiCache userCache;
 	private FusekiCache anonymousCache;
 	private ScheduledExecutorService executorService;
@@ -93,12 +90,6 @@ public class RdfService implements OrngProperties, CleanupCapable {
 
     	if (StringUtils.isNotBlank(fuseki)) {
     		String fusekiURL = fuseki;
-    		if ("internal".equalsIgnoreCase(fuseki)) {
-    			fusekiURL = "http://localhost:3030/profiles";
-    			fusekiServer = new SPARQLServer(FusekiConfig.configure(OrngJsonLDService.class.getResource("/fuseki-shindigorng.ttl").getFile()));
-    			fusekiServer.start();
-    		}
-	    	
 	    	userCache = new FusekiCache(new SparqlQueryClient(fusekiURL + "/query"),
 	    								new ShindigSparqlPostClient(fusekiURL + "/update", fusekiURL + "/data?default", fetcher), 
 	    								new DbService(systemDomain, orngUser, dbUtil));
@@ -383,9 +374,6 @@ public class RdfService implements OrngProperties, CleanupCapable {
 	}
 	
 	public void cleanup() {
-		if (fusekiServer != null) {
-			fusekiServer.stop();
-		}
 		// since this is running in a daemon thread, this really isn't necessary
 		if (executorService != null) {
 			executorService.shutdown();

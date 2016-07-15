@@ -19,7 +19,27 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>2.4</version>
+				<version>2.6</version>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>war</goal>
+						</goals>
+						<configuration>
+							<packagingExcludes>WEB-INF/lib/shindig-gadgets-${shindig.version}*.jar</packagingExcludes>
+							<webResources>
+								<resource>
+									<directory>target/shindigorng/WEB-INF/lib/</directory>
+									<includes>
+										<include>shindig-gadgets-orng-${shindig.version}.jar</include>
+									</includes>
+									<targetPath>WEB-INF/lib</targetPath>
+								</resource>
+							</webResources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -66,27 +86,45 @@
 				</executions>
 			</plugin>
 			<plugin>
-			    <groupId>org.codehaus.mojo</groupId>
-			    <artifactId>truezip-maven-plugin</artifactId>
-			    <version>1.1</version>
-			    <executions>
-			        <execution>
-			            <id>remove-a-file-in-sub-archive</id>
-			            <goals>
-			                <goal>remove</goal>
-			            </goals>
-			            <phase>package</phase>
-			            <configuration>
-			                <fileset>
-			                    <directory>target/shindigorng/WEB-INF/lib/shindig-gadgets-${shindig.version}.jar</directory>
-			                    <includes>
-			                        <include>config/oauth.json</include>
-			                        <include>config/oauth2.json</include>
-			                    </includes>
-			                </fileset>
-			            </configuration>
-			        </execution>
-			    </executions>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>truezip-maven-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<id>remove-a-file-in-sub-archive</id>
+						<goals>
+							<goal>remove</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<fileset>
+								<directory>target/shindigorng/WEB-INF/lib/shindig-gadgets-${shindig.version}.jar</directory>
+								<includes>
+									<include>config/oauth.json</include>
+									<include>config/oauth2.json</include>
+								</includes>
+							</fileset>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.coderplus.maven.plugins</groupId>
+				<artifactId>copy-rename-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>rename-file</id>
+						<phase>package</phase>
+						<goals>
+							<goal>rename</goal>
+						</goals>
+						<configuration>
+							<sourceFile>target/shindigorng/WEB-INF/lib/shindig-gadgets-${shindig.version}.jar</sourceFile>
+							<destinationFile>target/shindigorng/WEB-INF/lib/shindig-gadgets-orng-${shindig.version}.jar</destinationFile>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -101,7 +139,7 @@
 		<dependency>
 			<groupId>com.microsoft.jdbc</groupId>
 			<artifactId>jdbc4</artifactId>
-			<version>3.0</version>
+			<version>6.0</version>
 		</dependency>
 
 		<dependency>
@@ -119,17 +157,17 @@
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>apache-jena-libs</artifactId>
-			<version>2.13.0</version>
+			<version>3.0.0</version>
 			<type>pom</type>
 		</dependency>
 
 		<dependency>
-		    <groupId>com.nimbusds</groupId>
-		    <artifactId>nimbus-jose-jwt</artifactId>
-		    <version>3.10</version>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>nimbus-jose-jwt</artifactId>
+			<version>3.10</version>
 		</dependency>
-  
-  		<!-- Shindig Dependencies -->
+
+		<!-- Shindig Dependencies -->
 		<dependency>
 			<groupId>org.apache.shindig</groupId>
 			<artifactId>shindig-features</artifactId>
@@ -155,8 +193,8 @@
 			<artifactId>shindig-extras</artifactId>
 			<version>${shindig.version}</version>
 		</dependency>
-		
-		
+
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -165,7 +203,7 @@
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
-			<version>2.13.0</version>
+			<version>3.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>edu.ucsf.ctsi</groupId>
@@ -174,8 +212,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-fuseki1</artifactId>
-			<version>1.1.2</version>
+			<artifactId>jena-fuseki-server</artifactId>
+			<version>2.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

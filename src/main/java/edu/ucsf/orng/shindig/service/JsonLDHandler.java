@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.jena.rdf.model.Model;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.protocol.HandlerPreconditions;
 import org.apache.shindig.protocol.Operation;
@@ -38,7 +39,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
-import com.hp.hpl.jena.rdf.model.Model;
 
 import edu.ucsf.orng.shindig.config.OrngProperties;
 import edu.ucsf.orng.shindig.spi.rdf.OrngJsonLDService;
