@@ -20,6 +20,8 @@ package edu.ucsf.orng.shindig.service;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -53,6 +55,9 @@ public class JsonLDHandler implements OrngProperties {
 
 	private final RdfService rdfService;
 	private final OrngJsonLDService jsonldService;
+	
+	private static final Logger LOG = Logger.getLogger(JsonLDHandler.class.getName());		
+	
 	
 	@Inject
 	public JsonLDHandler(RdfService rdfService, OrngJsonLDService jsonldService) {
@@ -133,6 +138,7 @@ public class JsonLDHandler implements OrngProperties {
 			return Futures.immediateFuture(retval);
 		} 
 		catch (Exception e) {
+	        LOG.log(Level.SEVERE, "Error in getJSONItems", e);
 			throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
 		} 
 	}
