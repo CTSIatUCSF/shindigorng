@@ -43,16 +43,14 @@ public class OrngSecurityTokenService implements Runnable, CleanupCapable {
 	
 	private SecurityTokenCodec securityTokenCodec;
 	private final int port;
-	private final int socketTimeout;
 	private boolean stop = false;
 	private ExecutorService listenerService = null;
 	private ExecutorService encoderService = null;
 	
 	@Inject
-	public OrngSecurityTokenService(ContainerConfig config, SecurityTokenCodec codec, @Named("orng.tokenservice.port") int port, @Named("orng.tokenservice.socketTimeout") int socketTimeout, CleanupHandler cleanup) {
+	public OrngSecurityTokenService(ContainerConfig config, SecurityTokenCodec codec, @Named("orng.tokenservice.port") int port, CleanupHandler cleanup) {
 		this.securityTokenCodec = codec;
 		this.port = port;
-		this.socketTimeout = socketTimeout; // we expect this to be in seconds, not milliseconds!
 	    cleanup.register(this);
 		// start listening for connections
 	    listenerService = Executors.newFixedThreadPool(1);
@@ -99,8 +97,6 @@ public class OrngSecurityTokenService implements Runnable, CleanupCapable {
 		try {
 			while (!stop) {
 				final Socket s = ssc.accept().socket();
-				s.setSoTimeout(socketTimeout * 1000);
-				LOG.log(Level.INFO, "SoTimeout, SoLinger = " + s.getSoTimeout() + ", " + s.getSoLinger());
 				encoderService.submit(new Runnable() {
 					public void run() {
 						BufferedReader in = null;
