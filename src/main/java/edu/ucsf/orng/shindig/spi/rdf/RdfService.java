@@ -1,5 +1,6 @@
 package edu.ucsf.orng.shindig.spi.rdf;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -18,7 +19,11 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.fuseki.embedded.FusekiEmbeddedServer;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.tdb.TDBFactory;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.cache.Cache;
 import org.apache.shindig.common.cache.CacheProvider;
@@ -59,6 +64,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
 	
 	private FusekiCache userCache;
 	private FusekiCache anonymousCache;
+	private FusekiEmbeddedServer fusekiServer = null;
 	private ScheduledExecutorService executorService;
 	
 	@Inject
@@ -89,8 +95,22 @@ public class RdfService implements OrngProperties, CleanupCapable {
     	}
 
     	if (StringUtils.isNotBlank(fuseki)) {
-    		String fusekiURL = fuseki;
-	    	userCache = new FusekiCache(new SparqlQueryClient(fusekiURL + "/query"),
+    		String fusekiURL = null;
+    		if (fuseki.startsWith("embedded")) {
+    			int port = fuseki.contains(":") ? Integer.parseInt(fuseki.split(":")[1]) : 3330;
+    			String dir = System.getProperty("java.io.tmpdir") + "/RDF/" + port;
+    			LOG.info("Using RDF directory :" + dir);
+    			new File(dir).mkdirs();    			
+    			Dataset pds = TDBFactory.createDataset(dir);//DatasetFactory.assemble("profiles.ttl");
+    			fusekiServer = FusekiEmbeddedServer.create().add("/profiles", pds).setPort(port).build();
+    			fusekiServer.start();
+    			fusekiURL = "http://localhost:" + port + "/profiles";
+    		}
+    		else {
+    			fusekiURL = fuseki;
+    		}
+    		
+	    	userCache = new FusekiCache( new SparqlQueryClient(fusekiURL + "/query"),
 	    								new ShindigSparqlPostClient(fusekiURL + "/update", fusekiURL + "/data?default", fetcher), 
 	    								new DbService(systemDomain, orngUser, dbUtil));
 	    	//userService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + orngUser, tdbCacheExpire, new DbModelService(systemDomain, orngUser, dbUtil));
@@ -107,7 +127,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
 	    	// start with a delay equal to the run limit.  Shindig is busy at startup, so best to wait 
 	    	executorService.scheduleAtFixedRate(new EagerFetcher(userCache, Integer.parseInt(eagerRunLimit)), 
 	    			Integer.parseInt(eagerRunLimit), Integer.parseInt(fetchInterval), TimeUnit.MINUTES);
-	    	}
+	    }
 	}
 	
 	private Model getFromModelCache(String key) {
@@ -377,6 +397,10 @@ public class RdfService implements OrngProperties, CleanupCapable {
 		// since this is running in a daemon thread, this really isn't necessary
 		if (executorService != null) {
 			executorService.shutdown();
+		}
+		if (fusekiServer != null) {
+			fusekiServer.stop();
+			fusekiServer.join();
 		}
 	}
 	
