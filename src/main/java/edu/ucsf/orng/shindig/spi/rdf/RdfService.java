@@ -375,7 +375,12 @@ public class RdfService implements OrngProperties, CleanupCapable {
 				DateTime start = new DateTime();
 				for (String uri : currentURIs) {
 					processedURIs.add(uri);
-					service.getResource(uri);
+					try {
+						service.getResource(uri);
+					}
+					catch (Exception e) {
+						LOG.log(Level.WARNING, "Unable to process URI: " + uri + ", " + e.getMessage(), e);
+					}					
 					if (new Period(start, new DateTime()).getMinutes() > runTimeInMinutes) {
 						LOG.info("Halting, out of time");
 						break;
