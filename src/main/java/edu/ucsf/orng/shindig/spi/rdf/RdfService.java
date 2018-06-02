@@ -307,7 +307,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
 		}
 	}
 	
-	public boolean removeAppFromPerson(UserId userId, String appId, String deleteType, SecurityToken token) {
+	public boolean removeAppFromPerson(UserId userId, String appId, SecurityToken token) {
 		String id = userId.getUserId(token);
 		appId = dbUtil.getAppId(appId);
 		// clear cache
@@ -319,7 +319,6 @@ public class RdfService implements OrngProperties, CleanupCapable {
             cs.setNull("SubjectID", java.sql.Types.BIGINT);
     		cs.setString("SubjectURI", id);
     		cs.setInt("AppID", Integer.parseInt(appId));
-    		cs.setInt("DeleteType", Integer.parseInt(deleteType));
             return cs.execute();
         } 
         catch (SQLException se) {

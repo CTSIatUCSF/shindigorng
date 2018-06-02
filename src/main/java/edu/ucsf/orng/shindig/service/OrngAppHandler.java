@@ -88,7 +88,7 @@ public class OrngAppHandler implements OrngProperties {
 	    HandlerPreconditions.requireNotEmpty(userIds, "No userId specified");
 	    HandlerPreconditions.requireSingular(userIds, "Multiple userIds not supported");
 
-	    return Futures.immediateFuture(rdfService.removeAppFromPerson(userIds.iterator().next(), request.getAppId(), request.getParameter("deleteType"), request.getToken()));
+	    return Futures.immediateFuture(rdfService.removeAppFromPerson(userIds.iterator().next(), request.getAppId(), request.getToken()));
 	}
 
 	@Operation(httpMethods = "GET")

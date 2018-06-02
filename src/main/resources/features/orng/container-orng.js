@@ -16,15 +16,6 @@
  * specific language governing permissions and limitations under the License.
  */
 
-//This allows us to use Google Analytics when present, but not throw errors when not.
-var _gaq = _gaq || {};
-
-// create dummy function if necessary so google analytics does not break for institutions who do not use it
-if (typeof _gaq.push != 'function') {
-    _gaq.push = function (data) { };
-}
-// Google Analytics END
-
 osapi.container.Container.addMixin('orng', function(container) {
 
 	container.rpcRegister('orng_containerRpc', function (rpc, channel, opt_params) {
