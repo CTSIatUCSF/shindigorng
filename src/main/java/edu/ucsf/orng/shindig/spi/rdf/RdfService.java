@@ -315,7 +315,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
         Connection conn = dbUtil.getConnection();
         try {
             CallableStatement cs = conn
-    		        .prepareCall("{ call " + delete_sp + "(?, ?, ?, ?)}");
+    		        .prepareCall("{ call " + delete_sp + "(?, ?, ?)}");
             cs.setNull("SubjectID", java.sql.Types.BIGINT);
     		cs.setString("SubjectURI", id);
     		cs.setInt("AppID", Integer.parseInt(appId));

@@ -191,7 +191,7 @@
     },
     "verify" : {
       "isOnlyVisible" : false,
-      "urlTemplate" : "http://localhost${CONTEXT_ROOT}/gadgets/default?{var}",
+      "urlTemplate" : "/gadgets/default?{var}",
       "aliases" : ["verify"]
     },
     "home" : {
