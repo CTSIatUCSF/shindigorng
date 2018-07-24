@@ -10,6 +10,6 @@ The one change that is required is to update the top jsonld-java pom.xml file to
 This is required for the TDB items.
 
 To install the jdbc driver needed for SQL Server, go into the jars directory and run the following command:
->mvn install:install-file -Dfile=jdbc4-3.0.jar -DgroupId=com.microsoft.jdbc -DartifactId=jdbc4 -Dversion=3.0 -Dpackaging=jar
+>mvn install:install-file -Dfile=jdbc4-6.0.jar -DgroupId=com.microsoft.jdbc -DartifactId=jdbc4 -Dversion=6.0 -Dpackaging=jar
 
 Eric Meeks
