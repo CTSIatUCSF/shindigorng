@@ -11,7 +11,7 @@
 
 	<properties>
 		<shindig.version>2.5.2</shindig.version>
-		<profiles.location>/Users/meekse/Development/ProfilesRNS</profiles.location>
+		<profiles.location>/Users/meekse/Development/ProfilesRNS/CTSIatUCSF</profiles.location>
 	</properties>
 
 	<build>
@@ -52,7 +52,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${profiles.location}/ProfilesRNS/Website/ORNG/shindig/conf</outputDirectory>
+							<outputDirectory>${profiles.location}/Website/ORNG/shindig/conf</outputDirectory>
 							<resources>
 								<resource>
 									<directory>conf</directory>
@@ -72,7 +72,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${profiles.location}/ProfilesRNS/Website/ORNG</outputDirectory>
+							<outputDirectory>${profiles.location}/Website/ORNG</outputDirectory>
 							<resources>
 								<resource>
 									<directory>target</directory>
