@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.fuseki.embedded.FusekiEmbeddedServer;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.shindig.auth.SecurityToken;
@@ -110,9 +109,10 @@ public class RdfService implements OrngProperties, CleanupCapable {
     			fusekiURL = fuseki;
     		}
     		
+    		DbService dbService = new DbService(systemDomain, orngUser, dbUtil);
 	    	userCache = new FusekiCache( new SparqlQueryClient(fusekiURL + "/query"),
 	    								new ShindigSparqlPostClient(fusekiURL + "/update", fusekiURL + "/data?default", fetcher), 
-	    								new DbService(systemDomain, orngUser, dbUtil));
+	    								dbService, dbService);
 	    	//userService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + orngUser, tdbCacheExpire, new DbModelService(systemDomain, orngUser, dbUtil));
 	    	//anonymousService = new TDBCacheResourceService(system, systemDomain, tdbBaseDir + ANONYMOUS, tdbCacheExpire, new DbModelService(systemDomain, null, dbUtil));
 	    	
