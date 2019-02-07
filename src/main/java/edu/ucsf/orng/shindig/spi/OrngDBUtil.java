@@ -104,11 +104,13 @@ public class OrngDBUtil extends DBUtil implements OrngProperties, CleanupCapable
 		}
 
 		// check DB
-		String sql = "select AppID from " + apps_table + " where Url = ?";
+		String sql = "select AppID from " + apps_table + " where Url = ? UNION " +
+				"select AppID from [UCSF.ORNG].[InstitutionalizedApps] where Url = ?";
 		Connection conn = getConnection();
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1, url);		
+			ps.setString(2, url);		
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
 				addToAppIdsMap(url, rs.getString("AppID"));
@@ -123,6 +125,8 @@ public class OrngDBUtil extends DBUtil implements OrngProperties, CleanupCapable
 		        LOG.log(Level.SEVERE, "Error closing connection", se);
 			}
 		}
+
+		
 		// must be new
 		addToAppIdsMap(url, "" + Math.abs(url.hashCode()));
 		return appIds.get(url);

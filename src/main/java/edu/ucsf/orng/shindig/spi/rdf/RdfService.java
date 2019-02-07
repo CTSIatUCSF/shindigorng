@@ -78,8 +78,8 @@ public class RdfService implements OrngProperties, CleanupCapable {
 		if (SYS_PROFILES.equalsIgnoreCase(system)) {
 			systemBase += "/profile/";
 			this.get_sp = "[ORNG.].[GetAppInstance]";
-			this.add_sp = "[ORNG.].[AddAppToPerson]";
-			this.delete_sp = "[ORNG.].[RemoveAppFromPerson]";
+			this.add_sp = "[ORNG.].[AddAppToAgent]";
+			this.delete_sp = "[ORNG.].[RemoveAppFromAgent]";
 		}		
 
 		// set up the cache
