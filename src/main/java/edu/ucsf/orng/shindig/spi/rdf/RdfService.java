@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.fuseki.embedded.FusekiEmbeddedServer;
+import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.tdb.TDBFactory;
@@ -63,7 +63,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
 	
 	private FusekiCache userCache;
 	private FusekiCache anonymousCache;
-	private FusekiEmbeddedServer fusekiServer = null;
+	private FusekiServer fusekiServer = null;
 	private ScheduledExecutorService executorService;
 	
 	@Inject
@@ -101,7 +101,7 @@ public class RdfService implements OrngProperties, CleanupCapable {
     			LOG.info("Using RDF directory :" + dir);
     			new File(dir).mkdirs();    			
     			Dataset pds = TDBFactory.createDataset(dir);//DatasetFactory.assemble("profiles.ttl");
-    			fusekiServer = FusekiEmbeddedServer.create().add("/profiles", pds).setPort(port).build();
+    			fusekiServer = FusekiServer.create().add("/profiles", pds).port(port).build();
     			fusekiServer.start();
     			fusekiURL = "http://localhost:" + port + "/profiles";
     		}
