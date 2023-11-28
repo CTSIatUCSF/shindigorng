@@ -12,6 +12,8 @@
 	<properties>
 		<shindig.version>2.5.2</shindig.version>
 		<profiles.location>/Users/meekse/Development/ProfilesRNS/CTSIatUCSF</profiles.location>
+        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.target>1.6</maven.compiler.target>		
 	</properties>
 
 	<build>

@@ -40,6 +40,8 @@ public class OrngDBUtil extends DBUtil implements OrngProperties, CleanupCapable
 	private String dbUser;
 	private String dbPassword;
 	
+	private String orngUserURI = null;
+	
 	private Map<String, String> appIds = new HashMap<String, String>();
 
 	@Inject
@@ -49,6 +51,7 @@ public class OrngDBUtil extends DBUtil implements OrngProperties, CleanupCapable
 			@Named("orng.dbURL") String dbUrl,
 			@Named("orng.dbUser") String dbUser,
 			@Named("orng.dbPassword") String dbPassword,
+			@Named("orng.user") String orngUser,
 			CleanupHandler cleanup) throws ClassNotFoundException {
 		super(dbUrl, dbUser, dbPassword);
 
@@ -62,13 +65,28 @@ public class OrngDBUtil extends DBUtil implements OrngProperties, CleanupCapable
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;
-		String sql = "select AppID, Url from " + apps_table;
 		Connection conn = getConnection();
 		try {
-			PreparedStatement ps = conn.prepareStatement(sql);
+			PreparedStatement ps = conn.prepareStatement("select AppID, Url from " + apps_table);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
 				addToAppIdsMap(rs.getString("Url").toLowerCase(), rs.getString("AppID"));
+			}
+			ps.close();
+			
+			// load ORNG user
+			if (orngUser != null) {
+				ps = conn.prepareStatement("SELECT p.Value + CAST(m.NodeID AS VARCHAR(50)) " + 
+						"FROM [RDF.Stage].InternalNodeMap m, [Framework.].[Parameter] p " + 
+						"WHERE m.InternalID = (select UserID from [User.Account].[User]  where InternalUserName = '" + orngUser + "') " + 
+						"AND m.InternalType = 'User'\n" + 
+						"AND m.Class = 'http://profiles.catalyst.harvard.edu/ontology/prns#User' " + 
+						"AND p.ParameterID = 'baseURI'");
+				rs = ps.executeQuery();
+				if (rs.next()) {
+					orngUserURI = rs.getString(1);
+				}	
+				ps.close();
 			}
 		}
 		catch (SQLException se) {
@@ -78,7 +96,7 @@ public class OrngDBUtil extends DBUtil implements OrngProperties, CleanupCapable
 			try { conn.close(); } catch (SQLException se) {
 		        LOG.log(Level.SEVERE, "Error closing connection", se);
 			}
-		}
+		}		
 	}
 	
 	public String getAppId(String url) {
@@ -125,11 +143,14 @@ public class OrngDBUtil extends DBUtil implements OrngProperties, CleanupCapable
 		        LOG.log(Level.SEVERE, "Error closing connection", se);
 			}
 		}
-
 		
 		// must be new
 		addToAppIdsMap(url, "" + Math.abs(url.hashCode()));
 		return appIds.get(url);
+	}
+	
+	public String getORNGUserURI() {
+		return orngUserURI;
 	}
 	
 	// allow to pull up by full URL, name or ID
