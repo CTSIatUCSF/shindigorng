@@ -80,6 +80,7 @@ public class OrngPerson implements Person {
 	  protected List<String> turnOns;
 	  protected List<String> tvShows;
 	  protected List<Url> urls;
+	  protected String internalUsername;
 	  	  
 	  // Note: Not in the opensocial js person object directly
 	  private boolean isOwner = false;
@@ -589,4 +590,12 @@ public class OrngPerson implements Person {
 		this.appData = appData;
 	}
 
+	public String getInternalUsername() {
+		return internalUsername;
+	}
+
+	public void setInternalUsername(String internalUsername) {
+		this.internalUsername = internalUsername;
+	}
+	
 }

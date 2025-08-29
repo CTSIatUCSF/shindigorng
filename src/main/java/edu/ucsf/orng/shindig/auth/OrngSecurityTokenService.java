@@ -36,21 +36,25 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import edu.ucsf.orng.shindig.spi.OrngDBUtil;
+
 @Singleton
 public class OrngSecurityTokenService implements Runnable, CleanupCapable {
 
 	private static final Logger LOG = Logger.getLogger(OrngSecurityTokenService.class.getName());	
 	
 	private SecurityTokenCodec securityTokenCodec;
+	private String ORNGUserURI;
 	private final int port;
 	private boolean stop = false;
 	private ExecutorService listenerService = null;
 	private ExecutorService encoderService = null;
 	
 	@Inject
-	public OrngSecurityTokenService(ContainerConfig config, SecurityTokenCodec codec, @Named("orng.tokenservice.port") int port, CleanupHandler cleanup) {
+	public OrngSecurityTokenService(ContainerConfig config, SecurityTokenCodec codec, @Named("orng.tokenservice.port") int port, OrngDBUtil dbUtil, CleanupHandler cleanup) {
 		this.securityTokenCodec = codec;
 		this.port = port;
+		this.ORNGUserURI = dbUtil.getORNGUserURI();
 	    cleanup.register(this);
 		// start listening for connections
 	    listenerService = Executors.newFixedThreadPool(1);
@@ -158,6 +162,10 @@ public class OrngSecurityTokenService implements Runnable, CleanupCapable {
 			String value = param.split("=")[1];
 			map.put(name, 
 					OWNER.getKey().equals(name) || VIEWER.getKey().equals(name) || APP_URL.getKey().equals(name) ? URLDecoder.decode(value, "UTF-8") : value);
+		}
+		// add ORNG user as VIEWER if we don't have one. This is needed for OAuth to work with anonymous viewers
+		if (!map.containsKey(VIEWER.getKey())) {
+			map.put(VIEWER.getKey(), ORNGUserURI);
 		}
 		return map;
 	}

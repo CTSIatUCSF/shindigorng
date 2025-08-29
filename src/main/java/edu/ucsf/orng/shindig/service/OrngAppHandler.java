@@ -1,6 +1,5 @@
 package edu.ucsf.orng.shindig.service;
 
-import static org.apache.shindig.auth.AbstractSecurityToken.Keys.APP_URL;
 import static org.apache.shindig.auth.AbstractSecurityToken.Keys.CONTAINER;
 import static org.apache.shindig.auth.AbstractSecurityToken.Keys.OWNER;
 import static org.apache.shindig.auth.AbstractSecurityToken.Keys.VIEWER;

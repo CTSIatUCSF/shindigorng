@@ -5,13 +5,15 @@
 	<groupId>edu.ucsf.ctsi</groupId>
 	<artifactId>shindigorng</artifactId>
 	<packaging>war</packaging>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<name>shindigorng Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
 		<shindig.version>2.5.2</shindig.version>
-		<profiles.location>/Users/meekse/Development/ProfilesRNS/CTSIatUCSF</profiles.location>
+		<profiles.location>/Users/meekse/Development/Profiles/SourceCode/ProfilesRNS</profiles.location>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>		
 	</properties>
 
 	<build>
@@ -19,7 +21,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>2.6</version>
+				<version>3.4.0</version>
 				<executions>
 					<execution>
 						<phase>install</phase>
@@ -43,7 +45,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.6</version>
+				<version>3.3.1</version>
 				<executions>
 					<execution>
 						<id>copy-config-to-profiles</id>
@@ -157,20 +159,20 @@
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>apache-jena-libs</artifactId>
-			<version>3.9.0</version>
+			<version>3.17.0</version>
 			<type>pom</type>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-fuseki-main</artifactId>
-			<version>3.9.0</version>
+			<version>3.17.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>3.10</version>
+			<version>10.4.1</version>
 		</dependency>
 
 		<dependency>
@@ -211,22 +213,22 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.3.2</version>
+			<version>3.18.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
-			<version>3.9.0</version>
+			<version>3.17.0</version>
 		</dependency>
 		<dependency>
 			<groupId>edu.ucsf.ctsi</groupId>
 			<artifactId>r2r</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
+			<version>4.5.14</version>
 		</dependency>
 	</dependencies>
 </project>

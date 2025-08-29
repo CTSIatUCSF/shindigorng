@@ -106,41 +106,12 @@ gadgets.util.registerOnLoadHandler(function() {
 			return osapi.jsonld.getJsonLDData(options);
 		};
 
-		// in most cases, someone will just be asking for a single 
-		// FOAF:Person.  If you need a list of things, call frameArray
-		osapi.jsonld.frame = function(data, type, callback) {
-			var frame = gadgets.json.parse('{"@type": "' + type + '"}');
-			return osapi.jsonld._frameInternal(data, frame, false, callback);
-		};
-
-		osapi.jsonld.frameArray = function(data, type, callback) {
-			var frame = gadgets.json.parse('[{"@type": "' + type + '"}]');
-			return osapi.jsonld._frameInternal(data, frame, true, callback);
-		};
-
-		osapi.jsonld._frameInternal = function(data, frame, returnRequestItemsAsArray, callback) {
-			var options = {};
-			options.base = data.base;
-			var osapiJsonldIds = [];
-			// strip base out to get ids
-			for (var i = 0; i < data.uris.length; i++) {
-				osapiJsonldIds[i] = data.uris[i];
-			}
-			jsonld.frame(data.jsonld, frame, function(err, data) {
-				// get the ones we care about, add them in proper order
-				var requestedItems = [];
-				if (data) {
-					for (var i = 0; i < data['@graph'].length; i++) {
-						var ndx = osapiJsonldIds.indexOf(data['@graph'][i]['@id']);
-						if (ndx != -1) {
-							requestedItems[ndx] = data['@graph'][i];
-						}
-					}
-				}
-				callback(returnRequestItemsAsArray ? requestedItems : requestedItems[0]);
-			});
-		};
-
+		// for backwards compatability, but the second argument is ignored
+		osapi.jsonld.frame = function(data, ignore, callback) {
+			var frame = JSON.parse('{"@id": "' + data.uris[0] + '"}');
+			var framed = jsonld.frame(data.jsonld, frame);
+			framed.then(function(value) { callback(value); });
+		};		
 		/*
 		 * Return an array of objects
 		 */

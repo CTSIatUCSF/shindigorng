@@ -43,18 +43,18 @@ public class OrngSocialApiGuiceModule extends SocialApiGuiceModule {
 		bind(OAuth2DataService.class).to(OrngOAuthSupport.class);
 
 		bind(RdfService.class);
-		bind(OrngJsonLDService.class);		
+		bind(OrngJsonLDService.class);
 		bind(OrngSecurityTokenService.class);
+
 	}
 
 	/**
 	 * Hook to provide a Set of request handlers. Subclasses may override to add
 	 * or replace additional handlers.
 	 */
-	@SuppressWarnings("unchecked")
 	protected Set<Class<?>> getHandlers() {
-	
-	    return ImmutableSet.of(ActivityHandler.class, AppDataHandler.class,
-	            PersonHandler.class, MessageHandler.class, JsonLDHandler.class, OrngAppHandler.class);		
+
+		return ImmutableSet.of(ActivityHandler.class, AppDataHandler.class,
+				PersonHandler.class, MessageHandler.class, JsonLDHandler.class, OrngAppHandler.class);
 	}
 }
